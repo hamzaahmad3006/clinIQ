@@ -5,15 +5,21 @@ import { useRouter } from "next/navigation";
 
 // Interactive mask component that blurs its contents by default
 // and temporarily reveals them on click and hold.
-const PHIMask = ({ children }: { children: React.ReactNode }) => {
+const PHIMask = ({ children, onReveal }: { children: React.ReactNode; onReveal?: () => void }) => {
   const [revealed, setRevealed] = useState(false);
 
   return (
     <span
-      onMouseDown={() => setRevealed(true)}
+      onMouseDown={() => {
+        setRevealed(true);
+        if (!revealed) onReveal?.();
+      }}
       onMouseUp={() => setRevealed(false)}
       onMouseLeave={() => setRevealed(false)}
-      onTouchStart={() => setRevealed(true)}
+      onTouchStart={() => {
+        setRevealed(true);
+        if (!revealed) onReveal?.();
+      }}
       onTouchEnd={() => setRevealed(false)}
       className="text-data-mono text-on-surface-variant cursor-help transition-all duration-150 px-1 rounded-sm select-none"
       style={{
@@ -26,9 +32,34 @@ const PHIMask = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+interface DashboardData {
+  patients: { id: string; name: string; initials: string; nhsNumber: string; avatarColor: string; avatarTextColor: string }[];
+  encounters: {
+    id: string; patientId: string; patientName: string; patientInitials: string;
+    nhsNumber: string; status: string; statusLabel: string; statusColor: string;
+    borderColor: string; briefStatus: string; briefPercentage: number; flagCount: number;
+    avatarColor: string; avatarTextColor: string;
+  }[];
+  flags: {
+    id: string; patientId: string; patientName: string; flagType: string;
+    severity: string; description: string; source: string; acknowledgedBy: string | null;
+  }[];
+  stats: {
+    todayEncounters: number; briefsReady: number; briefsPercentage: number;
+    activeFlags: number; criticalFlags: number; highFlags: number;
+  };
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [sessionSeconds, setSessionSeconds] = useState(720); // 12 minutes
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    fetch("/api/patients")
+      .then((res) => res.json())
+      .then(setData);
+  }, []);
 
   // Countdown timer for session activity check
   useEffect(() => {
@@ -47,6 +78,24 @@ export default function DashboardPage() {
     router.push(`/patient/${patientId}`);
   };
 
+  const logNhsReveal = (patientId: string, patientName: string) => {
+    fetch("/api/audit-logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        actorId: "clin-andrew-001",
+        actorName: "Dr. Andrew",
+        actorRole: "on_call_physician",
+        action: "phi.nhs_number.revealed",
+        resourceType: "patient_encounter",
+        resourceId: patientId,
+        patientId,
+        accessResult: "granted",
+        sensitivityTier: 2,
+      }),
+    });
+  };
+
   return (
     <div className="bg-background text-on-background min-h-screen flex w-full">
       {/* SideNavBar */}
@@ -60,12 +109,12 @@ export default function DashboardPage() {
         <div className="px-4 mb-8">
           <div className="flex items-center gap-3 p-3 bg-navy-700 rounded-lg">
             <img
-              alt="Dr. Ahmed"
+              alt="Dr. Andrew"
               className="w-10 h-10 rounded-full object-cover"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_j0ZTAJy57YKRA3cXKCHl3TMTF7DV8ELmdUSxfMVwCO4IbNDNIMXsnmtyAVgqdOEcOhpM29kJ2vMjgGR4z98nPguMVPieQn4ARy3-J7PBISnpEMB2f8Y655xHzCsLM5xWqD-NCbOLAqThiPMAtVOvQ3ZTxi7fYukCR6PpsPM_khnui8lwVLZfXjEsX6uoeKW7NDSMaxoe-hBDgG5T1Obqny6A-d8AzWxiGdxdmh3-a7t5gZLb84y_grm1GPpweNvOeW8rLTSl5K8"
             />
             <div>
-              <p className="text-body-sm font-body-sm font-bold">Dr. Ahmed</p>
+              <p className="text-body-sm font-body-sm font-bold">Dr. Andrew</p>
               <p className="text-label-xs font-label-xs opacity-70">
                 On-Call Physician
               </p>
@@ -85,7 +134,7 @@ export default function DashboardPage() {
             <span className="text-label-xs font-label-xs">Dashboard</span>
           </a>
           <a
-            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all"
+            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all"
             href="#"
           >
             <span className="material-symbols-outlined" data-icon="person_search">
@@ -94,7 +143,7 @@ export default function DashboardPage() {
             <span className="text-label-xs font-label-xs">Patient Search</span>
           </a>
           <a
-            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all"
+            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all"
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -107,7 +156,7 @@ export default function DashboardPage() {
             <span className="text-label-xs font-label-xs">My Rounds</span>
           </a>
           <a
-            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all"
+            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all"
             href="#"
           >
             <span className="material-symbols-outlined" data-icon="auto_awesome">
@@ -116,7 +165,7 @@ export default function DashboardPage() {
             <span className="text-label-xs font-label-xs">AI Briefs</span>
           </a>
           <a
-            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all"
+            className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all"
             href="#"
           >
             <span className="material-symbols-outlined" data-icon="gavel">
@@ -134,15 +183,15 @@ export default function DashboardPage() {
             Break-Glass Access
           </button>
           <div className="space-y-1">
-            <a
-              className="flex items-center gap-4 px-4 py-2 text-on-primary-fixed-variant opacity-70 hover:opacity-100"
-              href="#"
-            >
-              <span className="material-symbols-outlined" data-icon="settings">
-                settings
-              </span>
-              <span className="text-label-xs font-label-xs">Settings</span>
-            </a>
+          <a
+            className="flex items-center gap-4 px-4 py-2 text-on-primary-fixed-variant opacity-70 hover:opacity-100"
+            href="/settings"
+          >
+            <span className="material-symbols-outlined" data-icon="settings">
+              settings
+            </span>
+            <span className="text-label-xs font-label-xs">Settings</span>
+          </a>
             <a
               className="flex items-center gap-4 px-4 py-2 text-on-primary-fixed-variant opacity-70 hover:opacity-100"
               href="#"
@@ -226,7 +275,7 @@ export default function DashboardPage() {
           <div className="flex justify-between items-end">
             <div>
               <h2 className="text-display-2xl font-display-2xl text-on-surface">
-                Welcome back, Dr. Ahmed
+                Welcome back, Dr. Andrew
               </h2>
               <p className="text-body-base text-on-surface-variant">
                 Intensive Care Unit • Monday, Oct 23
@@ -259,7 +308,7 @@ export default function DashboardPage() {
                   calendar_today
                 </span>
               </div>
-              <p className="text-display-3xl font-display-3xl text-primary">12</p>
+              <p className="text-display-3xl font-display-3xl text-primary">{data?.stats.todayEncounters ?? "—"}</p>
               <p className="text-label-xs text-green-600 mt-2 flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]" data-icon="trending_up">
                   trending_up
@@ -277,9 +326,9 @@ export default function DashboardPage() {
                   auto_stories
                 </span>
               </div>
-              <p className="text-display-3xl font-display-3xl text-primary">9</p>
+              <p className="text-display-3xl font-display-3xl text-primary">{data?.stats.briefsReady ?? "—"}</p>
               <p className="text-label-xs text-on-surface-variant mt-2">
-                75% automated completion
+                {data?.stats.briefsPercentage ?? "—"}% automated completion
               </p>
             </div>
 
@@ -297,14 +346,18 @@ export default function DashboardPage() {
                 </span>
               </div>
               <div className="flex items-end gap-3">
-                <p className="text-display-3xl font-display-3xl text-critical">3</p>
+                <p className="text-display-3xl font-display-3xl text-critical">{data?.stats.activeFlags ?? "—"}</p>
                 <div className="mb-2 space-x-1">
-                  <span className="bg-critical text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
-                    1 CRIT
-                  </span>
-                  <span className="bg-high-severity text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
-                    2 HIGH
-                  </span>
+                  {data && data.stats.criticalFlags > 0 && (
+                    <span className="bg-critical text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+                      {data.stats.criticalFlags} CRIT
+                    </span>
+                  )}
+                  {data && data.stats.highFlags > 0 && (
+                    <span className="bg-high-severity text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+                      {data.stats.highFlags} HIGH
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -356,154 +409,123 @@ export default function DashboardPage() {
                 <div className="text-right">Actions</div>
               </div>
 
-              {/* Row 1: J. Patel */}
-              <div className="group grid grid-cols-6 items-center px-4 py-4 bg-surface-container-lowest border-l-4 border-green-500 rounded-r-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                <div className="col-span-2 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-bold">
-                    JP
+              {data?.encounters.map((enc) => (
+                <div
+                  key={enc.id}
+                  className="group grid grid-cols-6 items-center px-4 py-4 bg-surface-container-lowest border-l-4 rounded-r-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                  style={{ borderColor: enc.borderColor?.replace("border-", "") || "var(--color-outline)" }}
+                >
+                  <div className="col-span-2 flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                      style={{ backgroundColor: enc.avatarColor, color: enc.avatarTextColor }}
+                    >
+                      {enc.patientInitials}
+                    </div>
+                    <span className="text-body-base font-bold">{enc.patientName}</span>
                   </div>
-                  <span className="text-body-base font-bold">J. Patel</span>
-                </div>
-                <div>
-                  <PHIMask>482-102-3912</PHIMask>
-                </div>
-                <div>
-                  <span className="bg-low-bg text-low-severity text-[10px] px-2 py-1 rounded-full font-bold border border-outline-variant">
-                    ADMITTED
-                  </span>
-                </div>
-                <div>
-                  <span className="text-blue-500 flex items-center gap-1 text-label-xs font-bold">
-                    <span className="material-symbols-outlined text-[16px]" data-icon="check_circle">
-                      check_circle
+                  <div>
+                    <PHIMask onReveal={() => logNhsReveal(enc.patientId, enc.patientName)}>
+                      {enc.nhsNumber}
+                    </PHIMask>
+                  </div>
+                  <div>
+                    <span
+                      className={`text-[10px] px-2 py-1 rounded-full font-bold border ${enc.statusColor}`}
+                    >
+                      {enc.statusLabel}
                     </span>
-                    Ready
-                  </span>
-                </div>
-                <div className="text-right">
-                  <button
-                    onClick={() => openPatientBrief("j-patel")}
-                    className="text-blue-500 hover:underline text-label-xs font-bold cursor-pointer"
-                  >
-                    OPEN BRIEF
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 2: M. Al-Farsi */}
-              <div className="group grid grid-cols-6 items-center px-4 py-4 bg-surface-container-lowest border-l-4 border-yellow-500 rounded-r-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                <div className="col-span-2 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold">
-                    MA
                   </div>
-                  <span className="text-body-base font-bold">M. Al-Farsi</span>
-                </div>
-                <div>
-                  <PHIMask>591-231-0081</PHIMask>
-                </div>
-                <div>
-                  <span className="bg-high-bg text-high-severity text-[10px] px-2 py-1 rounded-full font-bold border border-high-severity">
-                    LABS PENDING
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                    <div className="bg-blue-500 h-full w-2/3 animate-pulse"></div>
+                  <div>
+                    {enc.briefStatus === "ready" ? (
+                      <span className="text-blue-500 flex items-center gap-1 text-label-xs font-bold">
+                        <span className="material-symbols-outlined text-[16px]" data-icon="check_circle">
+                          check_circle
+                        </span>
+                        Ready
+                      </span>
+                    ) : enc.briefStatus === "syncing" ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+                          <div
+                            className="bg-blue-500 h-full animate-pulse"
+                            style={{ width: `${enc.briefPercentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-label-xs opacity-60">{enc.briefPercentage}%</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-critical">
+                        <span className="material-symbols-outlined text-[16px]" data-icon="error">
+                          error
+                        </span>
+                        <span className="text-label-xs font-bold">{enc.flagCount} Flags</span>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-label-xs opacity-60">60%</span>
-                </div>
-                <div className="text-right">
-                  <button className="text-on-surface-variant opacity-50 cursor-not-allowed text-label-xs font-bold">
-                    WAITING...
-                  </button>
-                </div>
-              </div>
-
-              {/* Row 3: S. Khan */}
-              <div className="group grid grid-cols-6 items-center px-4 py-4 bg-surface-container-lowest border-l-4 border-critical rounded-r-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-                <div className="col-span-2 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-critical font-bold">
-                    SK
-                  </div>
-                  <span className="text-body-base font-bold">S. Khan</span>
-                </div>
-                <div>
-                  <PHIMask>109-332-9456</PHIMask>
-                </div>
-                <div>
-                  <span className="bg-critical-bg text-critical text-[10px] px-2 py-1 rounded-full font-bold border border-critical">
-                    URGENT
-                  </span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-1 text-critical">
-                    <span className="material-symbols-outlined text-[16px]" data-icon="error">
-                      error
-                    </span>
-                    <span className="text-label-xs font-bold">2 Flags</span>
+                  <div className="text-right">
+                    <button
+                      onClick={() => openPatientBrief(enc.patientId)}
+                      className="text-blue-500 hover:underline text-label-xs font-bold cursor-pointer"
+                    >
+                      {enc.flagCount > 1 ? "REVIEW" : "OPEN BRIEF"}
+                    </button>
                   </div>
                 </div>
-                <div className="text-right">
-                  <button
-                    onClick={() => openPatientBrief("s-khan")}
-                    className="bg-critical text-white px-3 py-1 rounded text-label-xs font-bold hover:bg-opacity-90 cursor-pointer"
-                  >
-                    REVIEW
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* Critical Flags Panel (Right 1/3) */}
             <div className="space-y-6">
-              <div className="bg-white rounded-xl border-2 border-critical overflow-hidden">
-                <div className="bg-critical text-white p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined" data-icon="campaign">
-                      campaign
-                    </span>
-                    <h3 className="text-ui-heading font-ui-heading">
-                      Critical Alert
-                    </h3>
-                  </div>
-                  <span className="text-label-xs bg-white/20 px-2 py-0.5 rounded">
-                    NEW
-                  </span>
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-critical-bg flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-critical" data-icon="medical_services">
-                        medical_services
+              {data?.flags.filter((f) => f.severity === "critical" && !f.acknowledgedBy).map((flag) => (
+                <div key={flag.id} className="bg-white rounded-xl border-2 border-critical overflow-hidden">
+                  <div className="bg-critical text-white p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined" data-icon="campaign">
+                        campaign
                       </span>
+                      <h3 className="text-ui-heading font-ui-heading">
+                        Critical Alert
+                      </h3>
                     </div>
-                    <div>
-                      <p className="text-label-xs text-on-surface-variant font-bold uppercase tracking-wide">
-                        Allergy Conflict
-                      </p>
-                      <p className="text-body-base font-bold mt-1">J. Patel</p>
-                      <p className="text-body-sm text-on-surface-variant mt-1 leading-relaxed">
-                        Prescribed Penicillin (V-Cil-K) despite recorded allergy
-                        to Penicillins. Brief generation flagged clinical risk.
-                      </p>
+                    <span className="text-label-xs bg-white/20 px-2 py-0.5 rounded">
+                      NEW
+                    </span>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-full bg-critical-bg flex items-center justify-center shrink-0">
+                        <span className="material-symbols-outlined text-critical" data-icon="medical_services">
+                          medical_services
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-label-xs text-on-surface-variant font-bold uppercase tracking-wide">
+                          {flag.flagType.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </p>
+                        <p className="text-body-base font-bold mt-1">{flag.patientName}</p>
+                        <p className="text-body-sm text-on-surface-variant mt-1 leading-relaxed">
+                          {flag.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="bg-surface-container-low p-3 rounded text-label-xs font-data-mono text-on-surface-variant">
-                    Source: EPIC / Medication-Admin-Log v1.4
-                  </div>
-                  <div className="pt-4 flex gap-3">
-                    <button className="flex-1 bg-white border border-outline text-on-surface py-2 rounded-lg text-label-xs font-bold hover:bg-surface-container transition-all cursor-pointer">
-                      Acknowledge
-                    </button>
-                    <button
-                      onClick={() => openPatientBrief("j-patel")}
-                      className="flex-1 bg-critical text-white py-2 rounded-lg text-label-xs font-bold hover:bg-opacity-90 transition-all cursor-pointer"
-                    >
-                      View Brief
-                    </button>
+                    <div className="bg-surface-container-low p-3 rounded text-label-xs font-data-mono text-on-surface-variant">
+                      Source: {flag.source}
+                    </div>
+                    <div className="pt-4 flex gap-3">
+                      <button className="flex-1 bg-white border border-outline text-on-surface py-2 rounded-lg text-label-xs font-bold hover:bg-surface-container transition-all cursor-pointer">
+                        Acknowledge
+                      </button>
+                      <button
+                        onClick={() => openPatientBrief(flag.patientId)}
+                        className="flex-1 bg-critical text-white py-2 rounded-lg text-label-xs font-bold hover:bg-opacity-90 transition-all cursor-pointer"
+                      >
+                        View Brief
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ))}
 
               {/* Context Card */}
               <div className="bg-surface-container-high p-6 rounded-xl">

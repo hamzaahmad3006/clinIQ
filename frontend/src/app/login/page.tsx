@@ -35,9 +35,24 @@ export default function LoginPage() {
   };
 
   // Handle Smartcard submit action
-  const handleSmartcardSubmit = (e: React.FormEvent) => {
+  const handleSmartcardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isChecked && pin.length === 4) {
+      await fetch("/api/audit-logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          actorId: "clin-henderson-001",
+          actorName: "Dr. Henderson",
+          actorRole: "specialist",
+          action: "auth.login.success",
+          resourceType: "session",
+          resourceId: `sess-${Date.now()}`,
+          patientId: null,
+          accessResult: "granted",
+          sensitivityTier: null,
+        }),
+      });
       router.push("/dashboard");
     }
   };

@@ -146,27 +146,27 @@ export default function EmergencyBriefPage() {
           <div className="px-4 space-y-1">
             <div
               onClick={() => router.push("/dashboard")}
-              className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all cursor-pointer"
+              className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all cursor-pointer"
             >
               <span className="material-symbols-outlined">dashboard</span>
               <span className="text-body-sm">Dashboard</span>
             </div>
-            <div className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all cursor-pointer">
+            <div className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all cursor-pointer">
               <span className="material-symbols-outlined">person_search</span>
               <span className="text-body-sm">Patient Search</span>
             </div>
             <div
               onClick={() => router.push("/rounds")}
-              className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all cursor-pointer"
+              className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all cursor-pointer"
             >
               <span className="material-symbols-outlined">assignment</span>
               <span className="text-body-sm">My Rounds</span>
             </div>
-            <div className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all cursor-pointer">
+            <div className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all cursor-pointer">
               <span className="material-symbols-outlined">auto_awesome</span>
               <span className="text-body-sm">AI Briefs</span>
             </div>
-            <div className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all cursor-pointer">
+            <div className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all cursor-pointer">
               <span className="material-symbols-outlined">gavel</span>
               <span className="text-body-sm">Security Logs</span>
             </div>
@@ -181,12 +181,12 @@ export default function EmergencyBriefPage() {
             Break-Glass Access
           </button>
           <div className="space-y-1 border-t border-on-primary/10 pt-4">
-            <div className="flex items-center gap-3 px-4 py-2 text-on-primary-fixed-variant opacity-70 hover:opacity-100 transition-all cursor-pointer">
+            <a href="/settings" className="flex items-center gap-3 px-4 py-2 text-on-primary-fixed-variant opacity-70 hover:opacity-100 transition-all cursor-pointer">
               <span className="material-symbols-outlined text-[20px]">
                 settings
               </span>
               <span className="text-label-xs">Settings</span>
-            </div>
+            </a>
             <div className="flex items-center gap-3 px-4 py-2 text-on-primary-fixed-variant opacity-70 hover:opacity-100 transition-all cursor-pointer">
               <span className="material-symbols-outlined text-[20px]">
                 help

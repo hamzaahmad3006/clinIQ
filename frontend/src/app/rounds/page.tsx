@@ -3,11 +3,32 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+interface RoundsData {
+  beds: {
+    bed: string; patientId: string; patientName: string; age: number;
+    gender: string; briefStatus: string; overnightChanges: string[];
+    overnightDetail: string; flagCount: number; flagSeverity: string;
+  }[];
+  events: {
+    patientName: string; bed: string; time: string; severity: string;
+    title: string; description: string;
+  }[];
+  flags: { id: string; severity: string; acknowledgedBy: string | null }[];
+  stats: { totalBeds: number; occupiedBeds: number; criticalFlags: number; highFlags: number };
+}
+
 export default function WardRoundPage() {
   const router = useRouter();
   const [sessionSeconds, setSessionSeconds] = useState(720); // 12 minutes
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [generateState, setGenerateState] = useState<"idle" | "processing" | "ready">("idle");
+  const [data, setData] = useState<RoundsData | null>(null);
+
+  useEffect(() => {
+    fetch("/api/rounds")
+      .then((res) => res.json())
+      .then(setData);
+  }, []);
 
   // Countdown timer for session activity check
   useEffect(() => {
@@ -32,13 +53,15 @@ export default function WardRoundPage() {
 
   const sessionMinutesLeft = Math.floor(sessionSeconds / 60);
 
-  // Trigger briefs generation click animation sequence
-  const handleGenerateBriefs = () => {
+  // Trigger briefs generation via API
+  const handleGenerateBriefs = async () => {
     if (generateState !== "idle") return;
     setGenerateState("processing");
-    setTimeout(() => {
-      setGenerateState("ready");
-    }, 2500);
+    const res = await fetch("/api/rounds/generate", { method: "POST" });
+    const result = await res.json();
+    setData((prev) => (prev ? { ...prev, beds: result.beds } : prev));
+    setGenerateState("ready");
+    setTimeout(() => setGenerateState("idle"), 3000);
   };
 
   const openPatientBrief = (patientId: string) => {
@@ -75,7 +98,7 @@ export default function WardRoundPage() {
 
         <nav className="flex-1 space-y-1">
           <a
-            className="flex items-center gap-4 px-6 py-4 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all text-body-sm"
+            className="flex items-center gap-4 px-6 py-4 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all text-body-sm"
             href="#"
             onClick={(e) => {
               e.preventDefault();
@@ -97,7 +120,7 @@ export default function WardRoundPage() {
             My Rounds
           </a>
           <a
-            className="flex items-center gap-4 px-6 py-4 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all text-body-sm"
+            className="flex items-center gap-4 px-6 py-4 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all text-body-sm"
             href="#"
           >
             <span className="material-symbols-outlined" data-icon="person_search">
@@ -106,7 +129,7 @@ export default function WardRoundPage() {
             Patient Search
           </a>
           <a
-            className="flex items-center gap-4 px-6 py-4 text-on-primary-fixed-variant opacity-70 hover:bg-navy-700 hover:opacity-100 transition-all text-body-sm"
+            className="flex items-center gap-4 px-6 py-4 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all text-body-sm"
             href="#"
           >
             <span className="material-symbols-outlined" data-icon="auto_awesome">
@@ -122,17 +145,17 @@ export default function WardRoundPage() {
               Ward 4B Coverage
             </div>
             <div className="flex items-center justify-between text-label-xs">
-              <span className="opacity-70">Patients</span>
-              <span>12 / 14</span>
-            </div>
-            <div className="w-full bg-navy-900 h-1 rounded-full mt-2 overflow-hidden">
-              <div className="bg-secondary-fixed w-[85%] h-full"></div>
+                  <span className="opacity-70">Patients</span>
+                  <span>{data?.stats.occupiedBeds ?? "—"} / {data?.stats.totalBeds ?? "—"}</span>
+                </div>
+                <div className="w-full bg-navy-900 h-1 rounded-full mt-2 overflow-hidden">
+                  <div className="bg-secondary-fixed h-full" style={{ width: `${data ? (data.stats.occupiedBeds / data.stats.totalBeds) * 100 : 85}%` }}></div>
             </div>
           </div>
           <div className="flex flex-col gap-2 pt-4 border-t border-navy-700">
             <a
               className="flex items-center gap-3 text-label-xs opacity-70 hover:opacity-100 transition-all"
-              href="#"
+              href="/settings"
             >
               <span className="material-symbols-outlined text-[18px]" data-icon="settings">
                 settings
@@ -238,7 +261,7 @@ export default function WardRoundPage() {
                   Last Synchronized
                 </div>
                 <div className="text-body-sm font-data-mono font-bold">
-                  07:54:12
+                  {new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                 </div>
               </div>
 
@@ -306,178 +329,83 @@ export default function WardRoundPage() {
                       </tr>
                     </thead>
                     <tbody className="text-body-sm">
-                      {/* Row 1 */}
-                      <tr className="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
-                        <td className="px-4 py-4 font-data-mono text-primary font-bold">
-                          4B1
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="font-bold">T. Okonkwo</div>
-                          <div className="text-label-xs text-on-surface-variant">
-                            82y / Male
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-medium-bg text-medium-severity rounded font-bold text-label-xs">
-                            <span className="material-symbols-outlined text-[14px]">
-                              check_circle
-                            </span>
-                            Ready
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-on-error font-bold bg-error px-1.5 py-0.5 rounded text-[10px] w-fit">
-                              2 new obs
-                            </span>
-                            <span className="text-on-surface-variant text-[11px]">
-                              NEWS 4 → 6
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-critical font-bold">
-                          ●1
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            onClick={() => openPatientBrief("t-okonkwo")}
-                            className="p-2 hover:bg-surface-container-high rounded-full transition-all cursor-pointer"
-                          >
-                            <span
-                              className="material-symbols-outlined"
-                              data-icon="arrow_forward"
+                      {data?.beds.map((bed) => (
+                        <tr
+                          key={bed.bed}
+                          className={`border-b border-outline-variant hover:bg-surface-container-lowest transition-colors ${
+                            bed.flagSeverity === "critical" ? "border-l-4 border-l-critical" :
+                            bed.flagSeverity === "high" ? "border-l-4 border-l-high-severity" : ""
+                          }`}
+                        >
+                          <td className="px-4 py-4 font-data-mono text-primary font-bold">
+                            {bed.bed}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="font-bold">{bed.patientName}</div>
+                            <div className="text-label-xs text-on-surface-variant">
+                              {bed.age}y / {bed.gender}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            {bed.briefStatus === "ready" ? (
+                              <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-medium-bg text-medium-severity rounded font-bold text-label-xs">
+                                <span className="material-symbols-outlined text-[14px]">
+                                  check_circle
+                                </span>
+                                Ready
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-surface-container-highest text-on-surface-variant rounded font-bold text-label-xs">
+                                <span className="material-symbols-outlined text-[14px] animate-spin">
+                                  refresh
+                                </span>
+                                Syncing
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-4">
+                            {bed.overnightChanges.length > 0 ? (
+                              <div className="flex flex-col gap-1">
+                                {bed.overnightChanges.map((ch, i) => (
+                                  <span key={i} className="text-on-error font-bold bg-error px-1.5 py-0.5 rounded text-[10px] w-fit">
+                                    {ch}
+                                  </span>
+                                ))}
+                                {bed.overnightDetail && (
+                                  <span className="text-on-surface-variant text-[11px]">
+                                    {bed.overnightDetail}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-on-surface-variant italic text-[11px]">
+                                {bed.overnightDetail || "No significant change"}
+                              </span>
+                            )}
+                          </td>
+                          <td className={`px-4 py-4 font-bold ${
+                            bed.flagSeverity === "critical" ? "text-critical" :
+                            bed.flagSeverity === "high" ? "text-high-severity" :
+                            bed.flagSeverity === "none" ? "text-low-severity" :
+                            "text-medium-severity"
+                          }`}>
+                            {bed.flagCount > 0 ? `●${bed.flagCount}` : "·"}
+                          </td>
+                          <td className="px-4 py-4">
+                            <button
+                              onClick={() => openPatientBrief(bed.patientId)}
+                              className="p-2 hover:bg-surface-container-high rounded-full transition-all cursor-pointer"
                             >
-                              arrow_forward
-                            </span>
-                          </button>
-                        </td>
-                      </tr>
-                      {/* Row 2 */}
-                      <tr className="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors border-l-4 border-l-high-severity">
-                        <td className="px-4 py-4 font-data-mono text-primary font-bold">
-                          4B2
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="font-bold">S. Khan</div>
-                          <div className="text-label-xs text-on-surface-variant">
-                            45y / Female
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-surface-container-highest text-on-surface-variant rounded font-bold text-label-xs">
-                            <span className="material-symbols-outlined text-[14px] animate-spin">
-                              refresh
-                            </span>
-                            Syncing
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="text-on-tertiary-container font-bold bg-tertiary-fixed px-1.5 py-0.5 rounded text-[10px]">
-                            New labs ↑
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-high-severity font-bold">
-                          ▲3
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            onClick={() => openPatientBrief("s-khan")}
-                            className="p-2 hover:bg-surface-container-high rounded-full transition-all cursor-pointer"
-                          >
-                            <span
-                              className="material-symbols-outlined"
-                              data-icon="arrow_forward"
-                            >
-                              arrow_forward
-                            </span>
-                          </button>
-                        </td>
-                      </tr>
-                      {/* Row 3 */}
-                      <tr className="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors border-l-4 border-l-critical">
-                        <td className="px-4 py-4 font-data-mono text-primary font-bold">
-                          4B3
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="font-bold">R. Singh</div>
-                          <div className="text-label-xs text-on-surface-variant">
-                            61y / Male
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-medium-bg text-medium-severity rounded font-bold text-label-xs">
-                            <span className="material-symbols-outlined text-[14px]">
-                              check_circle
-                            </span>
-                            Ready
-                          </span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-critical font-bold text-[11px]">
-                              Creatinine 201 ↑
-                            </span>
-                            <span className="text-on-surface-variant text-[11px]">
-                              AKI Stage 1 Detected
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-critical font-bold">
-                          ●2
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            onClick={() => openPatientBrief("r-singh")}
-                            className="p-2 hover:bg-surface-container-high rounded-full transition-all cursor-pointer"
-                          >
-                            <span
-                              className="material-symbols-outlined"
-                              data-icon="arrow_forward"
-                            >
-                              arrow_forward
-                            </span>
-                          </button>
-                        </td>
-                      </tr>
-                      {/* Row 4 */}
-                      <tr className="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors">
-                        <td className="px-4 py-4 font-data-mono text-primary font-bold">
-                          4B4
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="font-bold">M. Davies</div>
-                          <div className="text-label-xs text-on-surface-variant">
-                            29y / Female
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-medium-bg text-medium-severity rounded font-bold text-label-xs">
-                            <span className="material-symbols-outlined text-[14px]">
-                              check_circle
-                            </span>
-                            Ready
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-on-surface-variant italic text-[11px]">
-                          No significant change
-                        </td>
-                        <td className="px-4 py-4 text-low-severity font-bold">
-                          ·
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            onClick={() => openPatientBrief("m-davies")}
-                            className="p-2 hover:bg-surface-container-high rounded-full transition-all cursor-pointer"
-                          >
-                            <span
-                              className="material-symbols-outlined"
-                              data-icon="arrow_forward"
-                            >
-                              arrow_forward
-                            </span>
-                          </button>
-                        </td>
-                      </tr>
+                              <span
+                                className="material-symbols-outlined"
+                                data-icon="arrow_forward"
+                              >
+                                arrow_forward
+                              </span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -493,7 +421,7 @@ export default function WardRoundPage() {
                       Overnight Changes
                     </h3>
                     <span className="text-label-xs px-2 py-0.5 bg-error text-on-error rounded font-bold">
-                      8 NEW EVENTS
+                      {data?.events.length ?? "—"} NEW EVENTS
                     </span>
                   </div>
                   <p className="text-label-xs opacity-70">
@@ -501,73 +429,42 @@ export default function WardRoundPage() {
                   </p>
                 </div>
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
-                  {/* Event 1 */}
-                  <div className="relative pl-6 border-l-2 border-critical">
-                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-critical border-4 border-navy-900"></div>
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-body-sm font-bold">
-                        R. Singh (4B3)
-                      </span>
-                      <span className="text-label-xs font-data-mono opacity-50">
-                        04:12
-                      </span>
-                    </div>
-                    <div className="p-3 bg-navy-800 rounded-lg border border-white/5">
-                      <div className="text-critical text-label-xs font-bold mb-1">
-                        CRITICAL LAB ALERT
+                  {data?.events.map((evt, i) => (
+                    <div
+                      key={i}
+                      className={`relative pl-6 border-l-2 ${
+                        evt.severity === "critical" ? "border-critical" :
+                        evt.severity === "high" ? "border-high-severity" :
+                        "border-outline/30"
+                      }`}
+                    >
+                      <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-4 border-navy-900 ${
+                        evt.severity === "critical" ? "bg-critical" :
+                        evt.severity === "high" ? "bg-high-severity" :
+                        "bg-outline"
+                      }`}></div>
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-body-sm font-bold">
+                          {evt.patientName} ({evt.bed})
+                        </span>
+                        <span className="text-label-xs font-data-mono opacity-50">
+                          {evt.time}
+                        </span>
                       </div>
-                      <p className="text-body-sm opacity-90 leading-relaxed">
-                        Creatinine increased from 115 to 201 µmol/L (AKI Stage 1).
-                        Potassium 5.4. No change in urine output noted in
-                        nursing notes.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Event 2 */}
-                  <div className="relative pl-6 border-l-2 border-high-severity">
-                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-high-severity border-4 border-navy-900"></div>
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-body-sm font-bold">
-                        T. Okonkwo (4B1)
-                      </span>
-                      <span className="text-label-xs font-data-mono opacity-50">
-                        03:45
-                      </span>
-                    </div>
-                    <div className="p-3 bg-navy-800 rounded-lg border border-white/5">
-                      <div className="text-high-severity text-label-xs font-bold mb-1">
-                        OBSERVATION TREND
+                      <div className="p-3 bg-navy-800 rounded-lg border border-white/5">
+                        <div className={`text-label-xs font-bold mb-1 ${
+                          evt.severity === "critical" ? "text-critical" :
+                          evt.severity === "high" ? "text-high-severity" :
+                          "text-on-primary-container"
+                        }`}>
+                          {evt.title}
+                        </div>
+                        <p className="text-body-sm opacity-90 leading-relaxed">
+                          {evt.description}
+                        </p>
                       </div>
-                      <p className="text-body-sm opacity-90 leading-relaxed">
-                        NEWS score escalated from 4 to 6. Tachycardia (112) and
-                        slight drop in O2 sats (93% on air). RMO reviewed and
-                        increased supplemental O2.
-                      </p>
                     </div>
-                  </div>
-
-                  {/* Event 3 */}
-                  <div className="relative pl-6 border-l-2 border-outline/30">
-                    <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-outline border-4 border-navy-900"></div>
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-body-sm font-bold">
-                        M. Davies (4B4)
-                      </span>
-                      <span className="text-label-xs font-data-mono opacity-50">
-                        01:20
-                      </span>
-                    </div>
-                    <div className="p-3 bg-navy-800 rounded-lg border border-white/5">
-                      <div className="text-on-primary-container text-label-xs font-bold mb-1">
-                        CLINICAL NOTE
-                      </div>
-                      <p className="text-body-sm opacity-90 leading-relaxed">
-                        Patient slept well. PRN analgesic administered for minor
-                        abdominal pain at 00:30. Effectively settled.
-                      </p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
                 <div className="p-4 bg-navy-800/50 text-center">
                   <button className="text-label-xs font-bold text-secondary-fixed-dim hover:underline flex items-center justify-center gap-2 w-full cursor-pointer">
