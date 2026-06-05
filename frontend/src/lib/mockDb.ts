@@ -724,6 +724,91 @@ export function getEmergencyData(): EmergencyData {
   return emergencyData;
 }
 
+/* ───── Break-Glass Events ───── */
+
+export interface BreakGlassEvent {
+  id: string;
+  clinicianId: string;
+  clinicianName: string;
+  patientId: string;
+  patientName: string;
+  justification: string;
+  createdAt: string;
+  expiresAt: string;
+  privacyOfficerNotified: boolean;
+  reviewStatus: "pending" | "justified" | "unjustified";
+}
+
+let breakGlassEvents: BreakGlassEvent[] = [];
+let nextBgId = 1;
+
+export function createBreakGlassEvent(
+  clinicianId: string,
+  clinicianName: string,
+  patientId: string,
+  patientName: string,
+  justification: string
+): BreakGlassEvent | { error: string } {
+  // Check limit: max 3 in rolling 30 days
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const recentCount = breakGlassEvents.filter(
+    (e) => e.clinicianId === clinicianId && new Date(e.createdAt) > thirtyDaysAgo
+  ).length;
+  if (recentCount >= 3) return { error: "Break-Glass limit reached (max 3 per 30 days)" };
+
+  const event: BreakGlassEvent = {
+    id: `bg-${nextBgId++}`,
+    clinicianId,
+    clinicianName,
+    patientId,
+    patientName,
+    justification,
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
+    privacyOfficerNotified: true,
+    reviewStatus: "pending",
+  };
+  breakGlassEvents.push(event);
+
+  // Add temporary treatment relationship
+  treatmentRelationships.push({
+    patientId,
+    clinicianId,
+    clinicianName,
+    relationshipType: "break_glass",
+    validFrom: event.createdAt,
+    validUntil: event.expiresAt,
+    status: "active",
+  });
+
+  createAuditLog({
+    actorId: clinicianId,
+    actorName: clinicianName,
+    actorRole: "specialist",
+    action: "break_glass.initiated",
+    resourceType: "patient_brief",
+    resourceId: patientId,
+    patientId,
+    accessResult: "break_glass",
+    sensitivityTier: 2,
+  });
+
+  return event;
+}
+
+export function getActiveBreakGlass(clinicianId: string, patientId: string): BreakGlassEvent | undefined {
+  return breakGlassEvents.find(
+    (e) =>
+      e.clinicianId === clinicianId &&
+      e.patientId === patientId &&
+      new Date(e.expiresAt) > new Date()
+  );
+}
+
+export function getAllBreakGlassEvents(): BreakGlassEvent[] {
+  return [...breakGlassEvents];
+}
+
 /* ───── Opaque ID Mapping ───── */
 
 const opaqueIdMap: Record<string, string> = {

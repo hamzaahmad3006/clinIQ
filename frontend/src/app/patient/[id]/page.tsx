@@ -46,6 +46,10 @@ export default function PatientBriefPage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [accessReason, setAccessReason] = useState("");
   const [canBreakGlass, setCanBreakGlass] = useState(false);
+  const [showBreakGlassForm, setShowBreakGlassForm] = useState(false);
+  const [bgJustification, setBgJustification] = useState("");
+  const [bgError, setBgError] = useState("");
+  const [bgProcessing, setBgProcessing] = useState(false);
 
   useEffect(() => {
     if (!patientId) return;
@@ -91,31 +95,122 @@ export default function PatientBriefPage() {
     };
   }, []);
 
+  const handleBreakGlass = async () => {
+    if (bgJustification.length < 20) return;
+    setBgProcessing(true);
+    setBgError("");
+    try {
+      const res = await fetch("/api/break-glass", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId: patientId, justification: bgJustification }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBgError(data.error);
+        setBgProcessing(false);
+        return;
+      }
+      // Reset and re-fetch
+      setAccessDenied(false);
+      setShowBreakGlassForm(false);
+      setBgJustification("");
+      setBgProcessing(false);
+      // Re-fetch patient data
+      const patientRes = await fetch(`/api/patients/${patientId}`);
+      const patientData = await patientRes.json();
+      if (patientData.patient) {
+        setPatient(patientData.patient);
+        setFlags(patientData.flags);
+        setBlockedTiers(patientData.blockedTiers ?? []);
+      }
+    } catch {
+      setBgError("Failed to initiate Break-Glass. Please try again.");
+      setBgProcessing(false);
+    }
+  };
+
   if (accessDenied) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-8">
-        <div className="max-w-md w-full bg-surface-container-lowest rounded-xl border border-outline-variant p-8 text-center space-y-6 shadow-lg">
-          <span className="material-symbols-outlined text-[64px] text-critical" data-icon="lock">lock</span>
-          <h2 className="text-headline-xl font-headline-xl text-on-surface">Access Denied</h2>
-          <p className="text-body-base text-on-surface-variant">
-            You do not have an active treatment relationship with this patient.
-            This access has been logged.
-          </p>
-          {canBreakGlass && (
-            <button
-              onClick={() => alert("Break-Glass workflow coming soon")}
-              className="w-full bg-break-glass text-white py-3 rounded-lg font-bold hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <span className="material-symbols-outlined" data-icon="warning">warning</span>
-              Use Break-Glass Access
-            </button>
+        <div className="max-w-md w-full bg-surface-container-lowest rounded-xl border border-outline-variant p-8 space-y-6 shadow-lg">
+          {showBreakGlassForm ? (
+            <>
+              <div className="text-center space-y-2">
+                <span className="material-symbols-outlined text-[48px] text-break-glass" data-icon="warning">warning</span>
+                <h2 className="text-headline-xl font-headline-xl text-on-surface">Break-Glass Access</h2>
+                <p className="text-body-sm text-on-surface-variant">
+                  Emergency override for patients without a treatment relationship.
+                  Only Tier 1-2 data will be accessible. This action is audited and
+                  reviewed by the Privacy Officer.
+                </p>
+              </div>
+              <div className="bg-critical-bg border-l-4 border-critical p-3 text-left">
+                <p className="text-label-xs font-bold text-critical">⚠ LEGAL NOTICE</p>
+                <p className="text-body-sm text-on-surface-variant mt-1">
+                  Unjustified Break-Glass access may result in disciplinary action
+                  including termination and criminal referral.
+                </p>
+              </div>
+              <textarea
+                value={bgJustification}
+                onChange={(e) => setBgJustification(e.target.value)}
+                placeholder="Describe the clinical emergency (minimum 20 characters)..."
+                className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-secondary focus:outline-none min-h-[100px]"
+                maxLength={500}
+              />
+              <p className="text-label-xs text-on-surface-variant text-right">
+                {bgJustification.length}/500
+                {bgJustification.length < 20 && (
+                  <span className="text-critical ml-2">Minimum 20 characters required</span>
+                )}
+              </p>
+              {bgError && (
+                <p className="text-body-sm text-critical bg-critical-bg p-2 rounded">{bgError}</p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setShowBreakGlassForm(false); setBgError(""); }}
+                  className="flex-1 border border-outline-variant py-3 rounded-lg font-bold hover:bg-surface-variant transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleBreakGlass}
+                  disabled={bgJustification.length < 20 || bgProcessing}
+                  className="flex-1 bg-break-glass text-white py-3 rounded-lg font-bold hover:opacity-90 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {bgProcessing ? "Processing..." : "Confirm Break-Glass"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-center space-y-2">
+                <span className="material-symbols-outlined text-[64px] text-critical" data-icon="lock">lock</span>
+                <h2 className="text-headline-xl font-headline-xl text-on-surface">Access Denied</h2>
+                <p className="text-body-base text-on-surface-variant">
+                  You do not have an active treatment relationship with this patient.
+                  This access has been logged.
+                </p>
+              </div>
+              {canBreakGlass && (
+                <button
+                  onClick={() => setShowBreakGlassForm(true)}
+                  className="w-full bg-break-glass text-white py-3 rounded-lg font-bold hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined" data-icon="warning">warning</span>
+                  Use Break-Glass Access
+                </button>
+              )}
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="w-full border border-outline-variant py-3 rounded-lg font-bold hover:bg-surface-variant transition-all cursor-pointer"
+              >
+                Return to Dashboard
+              </button>
+            </>
           )}
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="w-full border border-outline-variant py-3 rounded-lg font-bold hover:bg-surface-variant transition-all cursor-pointer"
-          >
-            Return to Dashboard
-          </button>
         </div>
       </div>
     );
