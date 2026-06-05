@@ -53,6 +53,7 @@ export default function PatientBriefPage() {
   const [aiBrief, setAiBrief] = useState<string | null>(null);
   const [aiBriefLoading, setAiBriefLoading] = useState(false);
   const [aiBriefModel, setAiBriefModel] = useState<string | null>(null);
+  const [showAiModal, setShowAiModal] = useState(false);
 
   useEffect(() => {
     if (!patientId) return;
@@ -123,6 +124,7 @@ export default function PatientBriefPage() {
       const data = await res.json();
       setAiBrief(data.brief);
       setAiBriefModel(data.model);
+      setShowAiModal(true);
     } catch {
       setAiBrief("Failed to generate AI brief.");
     }
@@ -395,7 +397,7 @@ export default function PatientBriefPage() {
             <a
               className="flex items-center gap-3 px-6 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all text-body-sm"
               href="#"
-              onClick={(e) => e.preventDefault()}
+              onClick={(e) => { e.preventDefault(); handleGenerateAiBrief(); }}
             >
               <span className="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
               AI Briefs
@@ -502,28 +504,48 @@ export default function PatientBriefPage() {
             ))}
           </div>
 
-          {aiBrief && (
-            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-purple-200 rounded-xl p-6 mb-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-headline-lg text-headline-lg flex items-center gap-2 text-indigo-800">
-                  <span className="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
-                  AI-Generated Clinical Brief
-                </h3>
-                {aiBriefModel && (
-                  <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">
-                    {aiBriefModel}
-                  </span>
-                )}
+          {/* AI Brief Modal */}
+          {showAiModal && aiBrief && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col border border-outline-variant">
+                <div className="flex items-center justify-between p-6 border-b border-outline-variant">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-indigo-600" data-icon="auto_awesome">auto_awesome</span>
+                    <h2 className="text-headline-lg font-headline-lg text-indigo-800">AI Clinical Brief</h2>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {aiBriefModel && (
+                      <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">{aiBriefModel}</span>
+                    )}
+                    <button
+                      onClick={() => setShowAiModal(false)}
+                      className="p-2 hover:bg-surface-variant rounded-full cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined" data-icon="close">close</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="p-6 overflow-y-auto flex-1">
+                  <div className="text-body-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                    {aiBrief}
+                  </div>
+                </div>
+                <div className="p-4 border-t border-outline-variant flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowAiModal(false)}
+                    className="px-6 py-2 border border-outline-variant rounded-lg font-bold hover:bg-surface-variant transition-all cursor-pointer"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(aiBrief); }}
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-all cursor-pointer flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]" data-icon="content_copy">content_copy</span>
+                    Copy
+                  </button>
+                </div>
               </div>
-              <div className="prose prose-sm max-w-none text-body-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                {aiBrief}
-              </div>
-              <button
-                onClick={() => setAiBrief(null)}
-                className="mt-4 text-label-xs text-indigo-600 hover:underline font-bold cursor-pointer"
-              >
-                Dismiss AI Brief
-              </button>
             </div>
           )}
 

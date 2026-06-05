@@ -35,6 +35,7 @@ export default function WardRoundPage() {
   const [data, setData] = useState<RoundsData | null>(null);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [aiModel, setAiModel] = useState<string | null>(null);
+  const [showAiModal, setShowAiModal] = useState(false);
 
   useEffect(() => {
     fetch("/api/rounds")
@@ -64,6 +65,7 @@ export default function WardRoundPage() {
     setAiSummary(result.summary);
     setAiModel(result.model);
     setGenerateState("ready");
+    setShowAiModal(true);
     setTimeout(() => setGenerateState("idle"), 3000);
   };
 
@@ -134,6 +136,7 @@ export default function WardRoundPage() {
           <a
             className="flex items-center gap-4 px-6 py-4 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all text-body-sm"
             href="#"
+            onClick={(e) => { e.preventDefault(); handleGenerateBriefs(); }}
           >
             <span className="material-symbols-outlined" data-icon="auto_awesome">
               auto_awesome
@@ -479,28 +482,48 @@ export default function WardRoundPage() {
                 </div>
               </div>
 
-              {aiSummary && (
-                <div className="col-span-12 bg-gradient-to-br from-indigo-50 to-purple-50 border border-purple-200 rounded-xl p-6 shadow-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-headline-lg text-headline-lg flex items-center gap-2 text-indigo-800">
-                      <span className="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
-                      AI Ward Summary
-                    </h3>
-                    {aiModel && (
-                      <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">
-                        {aiModel}
-                      </span>
-                    )}
+              {/* AI Summary Modal */}
+              {showAiModal && aiSummary && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                  <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col border border-outline-variant">
+                    <div className="flex items-center justify-between p-6 border-b border-outline-variant">
+                      <div className="flex items-center gap-3">
+                        <span className="material-symbols-outlined text-indigo-600" data-icon="auto_awesome">auto_awesome</span>
+                        <h2 className="text-headline-lg font-headline-lg text-indigo-800">AI Ward Summary</h2>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {aiModel && (
+                          <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">{aiModel}</span>
+                        )}
+                        <button
+                          onClick={() => setShowAiModal(false)}
+                          className="p-2 hover:bg-surface-variant rounded-full cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined" data-icon="close">close</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-6 overflow-y-auto flex-1">
+                      <div className="text-body-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                        {aiSummary}
+                      </div>
+                    </div>
+                    <div className="p-4 border-t border-outline-variant flex justify-end gap-3">
+                      <button
+                        onClick={() => setShowAiModal(false)}
+                        className="px-6 py-2 border border-outline-variant rounded-lg font-bold hover:bg-surface-variant transition-all cursor-pointer"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onClick={() => { navigator.clipboard.writeText(aiSummary); }}
+                        className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-all cursor-pointer flex items-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[18px]" data-icon="content_copy">content_copy</span>
+                        Copy
+                      </button>
+                    </div>
                   </div>
-                  <div className="text-body-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                    {aiSummary}
-                  </div>
-                  <button
-                    onClick={() => setAiSummary(null)}
-                    className="mt-4 text-label-xs text-indigo-600 hover:underline font-bold cursor-pointer"
-                  >
-                    Dismiss
-                  </button>
                 </div>
               )}
             </div>

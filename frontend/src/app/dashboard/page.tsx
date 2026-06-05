@@ -160,6 +160,7 @@ export default function DashboardPage() {
           <a
             className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all"
             href="#"
+            onClick={(e) => { e.preventDefault(); router.push("/rounds"); }}
           >
             <span className="material-symbols-outlined" data-icon="auto_awesome">
               auto_awesome

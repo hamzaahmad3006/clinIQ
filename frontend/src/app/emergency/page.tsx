@@ -152,7 +152,10 @@ export default function EmergencyBriefPage() {
               <span className="material-symbols-outlined">assignment</span>
               <span className="text-body-sm">My Rounds</span>
             </div>
-            <div className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all cursor-pointer">
+            <div
+              onClick={() => router.push("/rounds")}
+              className="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all cursor-pointer"
+            >
               <span className="material-symbols-outlined">auto_awesome</span>
               <span className="text-body-sm">AI Briefs</span>
             </div>
