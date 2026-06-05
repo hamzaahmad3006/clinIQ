@@ -50,6 +50,9 @@ export default function PatientBriefPage() {
   const [bgJustification, setBgJustification] = useState("");
   const [bgError, setBgError] = useState("");
   const [bgProcessing, setBgProcessing] = useState(false);
+  const [aiBrief, setAiBrief] = useState<string | null>(null);
+  const [aiBriefLoading, setAiBriefLoading] = useState(false);
+  const [aiBriefModel, setAiBriefModel] = useState<string | null>(null);
 
   useEffect(() => {
     if (!patientId) return;
@@ -94,6 +97,37 @@ export default function PatientBriefPage() {
       window.removeEventListener("focus", handleFocus);
     };
   }, []);
+
+  const handleGenerateAiBrief = async () => {
+    if (!patient || aiBriefLoading) return;
+    setAiBriefLoading(true);
+    setAiBrief(null);
+    try {
+      const res = await fetch("/api/brief/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientId,
+          patientData: {
+            name: patient.fullName,
+            age: patient.age,
+            gender: patient.gender,
+            department: patient.department,
+            allergies: patient.allergies,
+            conditions: patient.conditions,
+            medications: patient.medications,
+            investigations: patient.investigations,
+          },
+        }),
+      });
+      const data = await res.json();
+      setAiBrief(data.brief);
+      setAiBriefModel(data.model);
+    } catch {
+      setAiBrief("Failed to generate AI brief.");
+    }
+    setAiBriefLoading(false);
+  };
 
   const handleMarkReviewed = async () => {
     await fetch("/api/audit-logs", {
@@ -419,6 +453,14 @@ export default function PatientBriefPage() {
             </div>
 
             <div className="flex gap-2">
+              <button
+                onClick={handleGenerateAiBrief}
+                disabled={aiBriefLoading}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-lg text-body-sm flex items-center gap-2 font-bold hover:opacity-90 transition-all cursor-pointer active:scale-95 disabled:opacity-60 disabled:cursor-wait"
+              >
+                <span className="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                {aiBriefLoading ? "Generating..." : "AI Brief"}
+              </button>
               <button className="bg-surface-container-high px-4 py-2 rounded-lg text-body-sm flex items-center gap-2 font-bold hover:bg-surface-container-highest transition-colors cursor-pointer border border-outline-variant/10 active:scale-95 transition-transform duration-100">
                 <span className="material-symbols-outlined" data-icon="print">print</span> Print Brief
               </button>
@@ -459,6 +501,31 @@ export default function PatientBriefPage() {
               </div>
             ))}
           </div>
+
+          {aiBrief && (
+            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 border border-purple-200 rounded-xl p-6 mb-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-headline-lg text-headline-lg flex items-center gap-2 text-indigo-800">
+                  <span className="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                  AI-Generated Clinical Brief
+                </h3>
+                {aiBriefModel && (
+                  <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">
+                    {aiBriefModel}
+                  </span>
+                )}
+              </div>
+              <div className="prose prose-sm max-w-none text-body-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                {aiBrief}
+              </div>
+              <button
+                onClick={() => setAiBrief(null)}
+                className="mt-4 text-label-xs text-indigo-600 hover:underline font-bold cursor-pointer"
+              >
+                Dismiss AI Brief
+              </button>
+            </div>
+          )}
 
           <div className="bento-grid w-full">
             <div className="col-span-12 md:col-span-4 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 flex flex-col hover:-translate-y-0.5 transition-all duration-200 shadow-sm">

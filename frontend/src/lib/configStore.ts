@@ -5,6 +5,7 @@ export interface AppConfig {
   fhirBaseUrl: string;
   gpConnectEndpoint: string;
   apiKey: string;
+  groqApiKey: string;
   currentClinicianId: string;
   currentClinicianName: string;
   currentClinicianRole: ClinicianRole;
@@ -16,6 +17,7 @@ let appConfig: AppConfig = {
   fhirBaseUrl: "",
   gpConnectEndpoint: "",
   apiKey: "",
+  groqApiKey: process.env.GROQ_API_KEY || "",
   currentClinicianId: "clin-henderson-001",
   currentClinicianName: "Dr. Henderson",
   currentClinicianRole: "specialist",

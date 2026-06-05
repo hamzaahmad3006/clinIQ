@@ -33,6 +33,8 @@ export default function WardRoundPage() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [generateState, setGenerateState] = useState<"idle" | "processing" | "ready">("idle");
   const [data, setData] = useState<RoundsData | null>(null);
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiModel, setAiModel] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/rounds")
@@ -59,6 +61,8 @@ export default function WardRoundPage() {
     const res = await fetch("/api/rounds/generate", { method: "POST" });
     const result = await res.json();
     setData((prev) => (prev ? { ...prev, beds: result.beds } : prev));
+    setAiSummary(result.summary);
+    setAiModel(result.model);
     setGenerateState("ready");
     setTimeout(() => setGenerateState("idle"), 3000);
   };
@@ -474,6 +478,31 @@ export default function WardRoundPage() {
                   </button>
                 </div>
               </div>
+
+              {aiSummary && (
+                <div className="col-span-12 bg-gradient-to-br from-indigo-50 to-purple-50 border border-purple-200 rounded-xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-headline-lg text-headline-lg flex items-center gap-2 text-indigo-800">
+                      <span className="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                      AI Ward Summary
+                    </h3>
+                    {aiModel && (
+                      <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">
+                        {aiModel}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-body-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                    {aiSummary}
+                  </div>
+                  <button
+                    onClick={() => setAiSummary(null)}
+                    className="mt-4 text-label-xs text-indigo-600 hover:underline font-bold cursor-pointer"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </main>

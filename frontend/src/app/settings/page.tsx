@@ -9,6 +9,8 @@ export default function SettingsPage() {
   const [fhirBaseUrl, setFhirBaseUrl] = useState("");
   const [gpConnectEndpoint, setGpConnectEndpoint] = useState("");
   const [apiKey, setApiKey] = useState("");
+  const [groqApiKey, setGroqApiKey] = useState("");
+  const [groqStatus, setGroqStatus] = useState<"idle" | "testing" | "valid" | "invalid">("idle");
   const [currentClinicianId, setCurrentClinicianId] = useState("clin-henderson-001");
   const [currentClinicianName, setCurrentClinicianName] = useState("Dr. Henderson");
   const [currentClinicianRole, setCurrentClinicianRole] = useState("specialist");
@@ -24,6 +26,7 @@ export default function SettingsPage() {
         setFhirBaseUrl(c.fhirBaseUrl);
         setGpConnectEndpoint(c.gpConnectEndpoint);
         setApiKey(c.apiKey);
+        setGroqApiKey(c.groqApiKey || "");
         setCurrentClinicianId(c.currentClinicianId);
         setCurrentClinicianName(c.currentClinicianName);
         setCurrentClinicianRole(c.currentClinicianRole);
@@ -36,10 +39,27 @@ export default function SettingsPage() {
     await fetch("/api/config", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dataSource, fhirBaseUrl, gpConnectEndpoint, apiKey, currentClinicianId, currentClinicianName, currentClinicianRole, tier3Authorized }),
+      body: JSON.stringify({ dataSource, fhirBaseUrl, gpConnectEndpoint, apiKey, groqApiKey, currentClinicianId, currentClinicianName, currentClinicianRole, tier3Authorized }),
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleTestGroq = async () => {
+    setGroqStatus("testing");
+    try {
+      const res = await fetch("/api/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groqApiKey }),
+      });
+      await res.json();
+      const testRes = await fetch("/api/llm/test");
+      const testData = await testRes.json();
+      setGroqStatus(testData.valid ? "valid" : "invalid");
+    } catch {
+      setGroqStatus("invalid");
+    }
   };
 
   return (
@@ -175,6 +195,38 @@ export default function SettingsPage() {
                 <p className="text-label-xs text-on-surface-variant mt-1">
                   Key is stored in memory for the session. Not persisted.
                 </p>
+              </div>
+
+              <div className="border-t border-outline-variant pt-4 mt-4">
+                <h3 className="text-headline-sm font-headline-sm mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-secondary" data-icon="auto_awesome">auto_awesome</span>
+                  Groq AI — Clinical Brief Generation
+                </h3>
+                <div>
+                  <label className="block text-label-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+                    Groq API Key
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="password"
+                      value={groqApiKey}
+                      onChange={(e) => { setGroqApiKey(e.target.value); setGroqStatus("idle"); }}
+                      placeholder="gsk_..."
+                      className="flex-1 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 text-body-sm text-on-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-secondary focus:outline-none font-data-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleTestGroq}
+                      disabled={!groqApiKey || groqStatus === "testing"}
+                      className="px-4 py-3 border border-outline-variant rounded-lg font-bold hover:bg-surface-variant transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-body-sm"
+                    >
+                      {groqStatus === "idle" ? "Test" : groqStatus === "testing" ? "..." : groqStatus === "valid" ? "✓ Valid" : "✗ Invalid"}
+                    </button>
+                  </div>
+                  <p className="text-label-xs text-on-surface-variant mt-1">
+                    Get a free key at <span className="font-data-mono">https://console.groq.com/keys</span>. Uses Llama 3 70B for brief generation.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
