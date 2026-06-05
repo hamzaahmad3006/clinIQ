@@ -95,6 +95,25 @@ export default function PatientBriefPage() {
     };
   }, []);
 
+  const handleMarkReviewed = async () => {
+    await fetch("/api/audit-logs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        actorId: "clin-henderson-001",
+        actorName: "Dr. Henderson",
+        actorRole: "specialist",
+        action: "brief.marked_reviewed",
+        resourceType: "patient_brief",
+        resourceId: patientId,
+        patientId,
+        accessResult: "granted",
+        sensitivityTier: 2,
+      }),
+    });
+    alert("Brief marked as reviewed. Audit logged.");
+  };
+
   const handleBreakGlass = async () => {
     if (bgJustification.length < 20) return;
     setBgProcessing(true);
@@ -349,8 +368,7 @@ export default function PatientBriefPage() {
             </a>
             <a
               className="flex items-center gap-3 px-6 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all text-body-sm"
-              href="#"
-              onClick={(e) => e.preventDefault()}
+              href="/security-logs"
             >
               <span className="material-symbols-outlined" data-icon="gavel">gavel</span>
               Security Logs
@@ -576,7 +594,7 @@ export default function PatientBriefPage() {
               </p>
             </div>
             <div className="flex gap-4">
-              <button className="bg-primary text-on-primary px-10 py-4 rounded-xl font-ui-heading text-body-base flex items-center gap-3 shadow-xl hover:scale-105 transition-transform cursor-pointer active:scale-95">
+              <button onClick={handleMarkReviewed} className="bg-primary text-on-primary px-10 py-4 rounded-xl font-ui-heading text-body-base flex items-center gap-3 shadow-xl hover:scale-105 transition-transform cursor-pointer active:scale-95">
                 <span className="material-symbols-outlined" data-icon="fact_check">fact_check</span>
                 Mark Brief as Reviewed
               </button>

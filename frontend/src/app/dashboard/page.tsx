@@ -168,7 +168,7 @@ export default function DashboardPage() {
           </a>
           <a
             className="flex items-center gap-4 px-4 py-3 text-on-primary-fixed-variant hover:bg-navy-700 hover:text-on-primary transition-all"
-            href="#"
+            href="/security-logs"
           >
             <span className="material-symbols-outlined" data-icon="gavel">
               gavel

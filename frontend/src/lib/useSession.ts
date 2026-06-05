@@ -27,7 +27,21 @@ export function useSession() {
     const interval = setInterval(() => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
-          router.push("/login");
+          fetch("/api/audit-logs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              actorId: "system",
+              actorName: "System",
+              actorRole: "system",
+              action: "auth.session_timeout",
+              resourceType: "session",
+              resourceId: `sess-${Date.now()}`,
+              patientId: null,
+              accessResult: "denied",
+              sensitivityTier: null,
+            }),
+          }).finally(() => router.push("/login"));
           return 0;
         }
         return prev - 1;
