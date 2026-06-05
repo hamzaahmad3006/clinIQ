@@ -12,6 +12,7 @@ export default function SettingsPage() {
   const [currentClinicianId, setCurrentClinicianId] = useState("clin-henderson-001");
   const [currentClinicianName, setCurrentClinicianName] = useState("Dr. Henderson");
   const [currentClinicianRole, setCurrentClinicianRole] = useState("specialist");
+  const [tier3Authorized, setTier3Authorized] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ export default function SettingsPage() {
         setCurrentClinicianId(c.currentClinicianId);
         setCurrentClinicianName(c.currentClinicianName);
         setCurrentClinicianRole(c.currentClinicianRole);
+        setTier3Authorized(c.tier3Authorized ?? false);
       });
   }, []);
 
@@ -34,7 +36,7 @@ export default function SettingsPage() {
     await fetch("/api/config", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dataSource, fhirBaseUrl, gpConnectEndpoint, apiKey, currentClinicianId, currentClinicianName, currentClinicianRole }),
+      body: JSON.stringify({ dataSource, fhirBaseUrl, gpConnectEndpoint, apiKey, currentClinicianId, currentClinicianName, currentClinicianRole, tier3Authorized }),
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -114,6 +116,22 @@ export default function SettingsPage() {
               <p className="text-label-xs text-on-surface-variant mt-1">
                 Treatment Relationship Verification is enforced. Only patients with an active relationship are accessible.
               </p>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 border border-outline-variant rounded-lg">
+              <input
+                type="checkbox"
+                id="tier3Auth"
+                checked={tier3Authorized}
+                onChange={(e) => setTier3Authorized(e.target.checked)}
+                className="accent-secondary h-5 w-5"
+              />
+              <label htmlFor="tier3Auth" className="cursor-pointer">
+                <span className="font-bold text-body-sm">Tier 3 Records Authorized</span>
+                <p className="text-label-xs text-on-surface-variant">
+                  Enable access to Mental Health, Substance Use, and other restricted records
+                </p>
+              </label>
             </div>
 
           <div className="space-y-4">

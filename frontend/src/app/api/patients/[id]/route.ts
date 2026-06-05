@@ -5,6 +5,7 @@ import {
   createAuditLog,
   resolvePatientId,
   verifyTreatmentRelationship,
+  filterPatientByTier,
 } from "@/lib/mockDb";
 import { getConfig } from "@/lib/configStore";
 
@@ -48,6 +49,24 @@ export async function GET(
 
   const flags = getClinicalFlagsByPatient(internalId);
 
+  // Filter by sensitivity tier
+  const { patient: filteredPatient, blockedTiers } = filterPatientByTier(patient, config.tier3Authorized ?? false);
+
+  // Log tier blocking
+  if (blockedTiers.length > 0) {
+    createAuditLog({
+      actorId: config.currentClinicianId,
+      actorName: config.currentClinicianName,
+      actorRole: config.currentClinicianRole,
+      action: "phi.tier_restricted",
+      resourceType: "patient_brief",
+      resourceId: id,
+      patientId: internalId,
+      accessResult: "granted",
+      sensitivityTier: blockedTiers[0],
+    });
+  }
+
   createAuditLog({
     actorId: config.currentClinicianId,
     actorName: config.currentClinicianName,
@@ -60,5 +79,5 @@ export async function GET(
     sensitivityTier: 2,
   });
 
-  return NextResponse.json({ patient, flags });
+  return NextResponse.json({ patient: filteredPatient, flags, blockedTiers });
 }

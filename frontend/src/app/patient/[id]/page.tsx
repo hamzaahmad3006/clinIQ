@@ -41,6 +41,7 @@ export default function PatientBriefPage() {
   const [overlayOpacity, setOverlayOpacity] = useState(0);
   const [patient, setPatient] = useState<PatientDetailData | null>(null);
   const [flags, setFlags] = useState<FlagData[]>([]);
+  const [blockedTiers, setBlockedTiers] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [accessReason, setAccessReason] = useState("");
@@ -56,6 +57,7 @@ export default function PatientBriefPage() {
       .then((data) => {
         setPatient(data.patient);
         setFlags(data.flags);
+        setBlockedTiers(data.blockedTiers ?? []);
         setLoading(false);
       })
       .catch((err) => {

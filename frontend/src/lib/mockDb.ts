@@ -654,7 +654,46 @@ export function getPatientById(id: string): Patient | undefined {
 }
 
 export function getPatientDetail(id: string): PatientDetail | undefined {
-  return patientDetails[id];
+  const raw = patientDetails[id];
+  if (!raw) return undefined;
+  return { ...raw };
+}
+
+const tier3PatientIds: Record<string, string[]> = {
+  "j-patel": ["Mental health records"],
+  "s-khan": ["Substance use treatment records"],
+};
+
+export function filterPatientByTier(
+  patient: PatientDetail,
+  tier3Authorized: boolean
+): { patient: PatientDetail; blockedTiers: number[] } {
+  const blockedTiers: number[] = [];
+
+  if (!tier3Authorized && tier3PatientIds[patient.id]) {
+    blockedTiers.push(3);
+    const blockedLabel = tier3PatientIds[patient.id][0];
+
+    return {
+      patient: {
+        ...patient,
+        conditions: patient.conditions.filter((c) => !c.name.includes("Mental") && !c.name.includes("Substance")),
+        medications: patient.medications.filter((m) => !m.name.includes("Antidepressant") && !m.name.includes("Methadone")),
+        investigations: patient.investigations.filter((i) => !i.name.includes("Psychiatric")),
+        warnings: [
+          ...patient.warnings.filter((w) => w.type !== "restricted"),
+          {
+            type: "restricted",
+            title: `Tier 3 Records Blocked: ${blockedLabel}`,
+            description: `${blockedLabel} are restricted under separate consent and are not included in this brief.`,
+          },
+        ],
+      },
+      blockedTiers,
+    };
+  }
+
+  return { patient: { ...patient }, blockedTiers };
 }
 
 export function getEncounters(): Encounter[] {

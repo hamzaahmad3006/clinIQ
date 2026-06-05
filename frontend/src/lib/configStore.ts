@@ -8,6 +8,7 @@ export interface AppConfig {
   currentClinicianId: string;
   currentClinicianName: string;
   currentClinicianRole: ClinicianRole;
+  tier3Authorized?: boolean;
 }
 
 let appConfig: AppConfig = {
@@ -18,6 +19,7 @@ let appConfig: AppConfig = {
   currentClinicianId: "clin-henderson-001",
   currentClinicianName: "Dr. Henderson",
   currentClinicianRole: "specialist",
+  tier3Authorized: false,
 };
 
 export function getConfig(): AppConfig {
