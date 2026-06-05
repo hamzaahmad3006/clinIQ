@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/useSession";
 
 interface RoundsData {
   beds: {
@@ -17,9 +18,18 @@ interface RoundsData {
   stats: { totalBeds: number; occupiedBeds: number; criticalFlags: number; highFlags: number };
 }
 
+const opaqueIdMap: Record<string, string> = {
+  "j-patel": "enc_a7f3b9c2",
+  "m-alfarsi": "enc_b8d4e0f3",
+  "s-khan": "enc_c9e5f1a4",
+  "t-okonkwo": "enc_d0f6a2b5",
+  "r-singh": "enc_e1a7b3c6",
+  "m-davies": "enc_f2b8c4d7",
+};
+
 export default function WardRoundPage() {
   const router = useRouter();
-  const [sessionSeconds, setSessionSeconds] = useState(720); // 12 minutes
+  const { minutesLeft, isWarning } = useSession();
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [generateState, setGenerateState] = useState<"idle" | "processing" | "ready">("idle");
   const [data, setData] = useState<RoundsData | null>(null);
@@ -28,15 +38,6 @@ export default function WardRoundPage() {
     fetch("/api/rounds")
       .then((res) => res.json())
       .then(setData);
-  }, []);
-
-  // Countdown timer for session activity check
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSessionSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
   }, []);
 
   // Handle window focus loss to trigger visual security overlay blur
@@ -50,8 +51,6 @@ export default function WardRoundPage() {
       window.removeEventListener("blur", handleBlur);
     };
   }, []);
-
-  const sessionMinutesLeft = Math.floor(sessionSeconds / 60);
 
   // Trigger briefs generation via API
   const handleGenerateBriefs = async () => {
@@ -199,14 +198,14 @@ export default function WardRoundPage() {
             <div className="flex items-center gap-2 bg-navy-800 px-3 py-1 rounded-full border border-outline/20">
               <span
                 className={`material-symbols-outlined text-[16px] transition-colors duration-300 ${
-                  sessionMinutesLeft < 5 ? "text-critical" : "text-high-severity"
+                  isWarning ? "text-critical" : "text-high-severity"
                 }`}
                 style={{ fontVariationSettings: "'FILL' 1" }}
               >
                 fiber_manual_record
               </span>
               <span className="text-label-xs font-label-xs text-on-primary">
-                ● Session: {sessionMinutesLeft}m
+                ● Session: {minutesLeft}m
               </span>
             </div>
 

@@ -1,22 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSession } from "@/lib/useSession";
 import { useRouter } from "next/navigation";
 
 export default function EmergencyBriefPage() {
   const router = useRouter();
-  const [sessionSeconds, setSessionSeconds] = useState(720); // 12 minutes
+  const { minutesLeft, isWarning } = useSession();
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [activeQuadrant, setActiveQuadrant] = useState<number | null>(null);
-
-  // Countdown timer for session activity check
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSessionSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   // Handle window focus loss to trigger visual security overlay blur
   useEffect(() => {
@@ -57,8 +49,6 @@ export default function EmergencyBriefPage() {
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
-
-  const sessionMinutesLeft = Math.floor(sessionSeconds / 60);
 
   const handleAcknowledgeAll = () => {
     alert("All critical flags acknowledged.");
@@ -113,12 +103,12 @@ export default function EmergencyBriefPage() {
             </span>
             <span
               className={`text-label-xs font-label-xs px-2 py-1 rounded transition-colors duration-300 ${
-                sessionMinutesLeft < 5
+                isWarning
                   ? "bg-session-warn text-white animate-pulse"
                   : "bg-secondary-container text-on-secondary-container"
               }`}
             >
-              ● Session: {sessionMinutesLeft}m
+              ● Session: {minutesLeft}m
             </span>
             <div className="w-8 h-8 rounded-full overflow-hidden border border-on-primary/20">
               <img

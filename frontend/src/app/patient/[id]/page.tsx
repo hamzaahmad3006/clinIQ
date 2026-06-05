@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useSession } from "@/lib/useSession";
 
 interface PatientDetailData {
   id: string;
@@ -33,8 +34,8 @@ export default function PatientBriefPage() {
   const router = useRouter();
   const params = useParams();
   const patientId = params?.id as string;
+  const { minutesLeft, isWarning } = useSession();
 
-  const [sessionSeconds, setSessionSeconds] = useState(720);
   const [isBlurred, setIsBlurred] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [overlayOpacity, setOverlayOpacity] = useState(0);
@@ -58,13 +59,6 @@ export default function PatientBriefPage() {
   }, [patientId, router]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSessionSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     const handleBlur = () => {
       setIsBlurred(true);
       setIsOverlayVisible(true);
@@ -82,8 +76,6 @@ export default function PatientBriefPage() {
       window.removeEventListener("focus", handleFocus);
     };
   }, []);
-
-  const sessionMinutesLeft = Math.floor(sessionSeconds / 60);
 
   if (loading || !patient) {
     return (
@@ -148,12 +140,12 @@ export default function PatientBriefPage() {
 
           <div
             className={`px-3 py-1 rounded-full text-label-xs font-label-xs transition-colors duration-300 ${
-              sessionMinutesLeft < 5
+              isWarning
                 ? "bg-session-warn text-white animate-pulse"
                 : "bg-secondary-container text-on-secondary-container"
             }`}
           >
-            ● Session: {sessionMinutesLeft}m
+            ● Session: {minutesLeft}m
           </div>
 
           <div className="flex items-center gap-3 pl-4 border-l border-on-primary-container/30">
@@ -248,8 +240,13 @@ export default function PatientBriefPage() {
             <div className="group cursor-pointer select-none">
               <h1 className="font-headline-xl text-headline-xl text-primary mb-1">
                 {patient.name} ·{" "}
-                <span className="phi-masked blur-md group-hover:blur-none select-none transition-all duration-300 pointer-events-none bg-transparent px-1 rounded-sm">
-                  NHS {patient.nhsNumber}
+                <span className="group relative cursor-help select-none">
+                  <span className="group-hover:hidden">
+                    NHS *** *** **{patient.nhsNumber.replace(/\D/g, "").slice(-2)}
+                  </span>
+                  <span className="hidden group-hover:inline bg-amber-50 px-1 rounded-sm">
+                    NHS {patient.nhsNumber}
+                  </span>
                 </span>{" "}
                 · Born {patient.dateOfBirth.split(" ").pop() || patient.dateOfBirth}
               </h1>

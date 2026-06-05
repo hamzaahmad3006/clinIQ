@@ -648,6 +648,32 @@ export function getEmergencyData(): EmergencyData {
   return emergencyData;
 }
 
+/* ───── Opaque ID Mapping ───── */
+
+const opaqueIdMap: Record<string, string> = {
+  "enc_a7f3b9c2": "j-patel",
+  "enc_b8d4e0f3": "m-alfarsi",
+  "enc_c9e5f1a4": "s-khan",
+  "enc_d0f6a2b5": "t-okonkwo",
+  "enc_e1a7b3c6": "r-singh",
+  "enc_f2b8c4d7": "m-davies",
+};
+
+const reverseOpaqueMap: Record<string, string> = {};
+for (const [opaque, internal] of Object.entries(opaqueIdMap)) {
+  reverseOpaqueMap[internal] = opaque;
+}
+
+export function resolvePatientId(input: string): string | undefined {
+  if (opaqueIdMap[input]) return opaqueIdMap[input];
+  if (patients.find((p) => p.id === input)) return input;
+  return undefined;
+}
+
+export function getOpaqueId(internalId: string): string | undefined {
+  return reverseOpaqueMap[internalId];
+}
+
 /* ───── Mutation Functions ───── */
 
 export function createAuditLog(entry: Omit<AuditLog, "id" | "timestamp">): AuditLog {

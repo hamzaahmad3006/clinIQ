@@ -2,11 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/useSession";
 
-// Interactive mask component that blurs its contents by default
-// and temporarily reveals them on click and hold.
-const PHIMask = ({ children, onReveal }: { children: React.ReactNode; onReveal?: () => void }) => {
+// Interactive mask component that shows masked NHS by default
+// and reveals full number on click-and-hold.
+const PHIMask = ({ children, onReveal }: { children: string; onReveal?: () => void }) => {
   const [revealed, setRevealed] = useState(false);
+  const rawNhs = String(children);
+  const lastTwo = rawNhs.replace(/\D/g, "").slice(-2);
+  const masked = `*** *** **${lastTwo}`;
 
   return (
     <span
@@ -21,13 +25,12 @@ const PHIMask = ({ children, onReveal }: { children: React.ReactNode; onReveal?:
         if (!revealed) onReveal?.();
       }}
       onTouchEnd={() => setRevealed(false)}
-      className="text-data-mono text-on-surface-variant cursor-help transition-all duration-150 px-1 rounded-sm select-none"
+      className="text-data-mono text-on-surface-variant cursor-help select-none transition-all duration-150 px-1 rounded-sm"
       style={{
-        filter: revealed ? "none" : "blur(4px)",
         backgroundColor: revealed ? "#FFFBEB" : "transparent",
       }}
     >
-      {children}
+      {revealed ? rawNhs : masked}
     </span>
   );
 };
@@ -50,9 +53,18 @@ interface DashboardData {
   };
 }
 
+const opaqueIdMap: Record<string, string> = {
+  "j-patel": "enc_a7f3b9c2",
+  "m-alfarsi": "enc_b8d4e0f3",
+  "s-khan": "enc_c9e5f1a4",
+  "t-okonkwo": "enc_d0f6a2b5",
+  "r-singh": "enc_e1a7b3c6",
+  "m-davies": "enc_f2b8c4d7",
+};
+
 export default function DashboardPage() {
   const router = useRouter();
-  const [sessionSeconds, setSessionSeconds] = useState(720); // 12 minutes
+  const { minutesLeft, isWarning } = useSession();
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
@@ -61,24 +73,14 @@ export default function DashboardPage() {
       .then(setData);
   }, []);
 
-  // Countdown timer for session activity check
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSessionSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Format seconds to minutes left
-  const sessionMinutesLeft = Math.floor(sessionSeconds / 60);
-
-  // Navigate to patient brief
+  // Navigate to patient brief using opaque ID
   const openPatientBrief = (patientId: string) => {
-    router.push(`/patient/${patientId}`);
+    const opaque = opaqueIdMap[patientId] || patientId;
+    router.push(`/patient/${opaque}`);
   };
 
   const logNhsReveal = (patientId: string, patientName: string) => {
+    const opaque = opaqueIdMap[patientId] || patientId;
     fetch("/api/audit-logs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -88,8 +90,8 @@ export default function DashboardPage() {
         actorRole: "on_call_physician",
         action: "phi.nhs_number.revealed",
         resourceType: "patient_encounter",
-        resourceId: patientId,
-        patientId,
+        resourceId: opaque,
+        patientId: opaque,
         accessResult: "granted",
         sensitivityTier: 2,
       }),
@@ -259,12 +261,12 @@ export default function DashboardPage() {
 
             <div
               className={`flex items-center gap-2 text-label-xs font-bold px-4 py-2 rounded-lg transition-colors duration-300 ${
-                sessionMinutesLeft < 5
+                isWarning
                   ? "bg-session-warn text-white animate-pulse"
                   : "bg-secondary-container text-on-secondary-container"
               }`}
             >
-              ● Session: {sessionMinutesLeft}m
+              ● Session: {minutesLeft}m
             </div>
           </div>
         </header>
