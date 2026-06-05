@@ -332,6 +332,43 @@ const overnightEvents: OvernightEvent[] = [
   },
 ];
 
+/* ───── Treatment Relationships ───── */
+
+export interface TreatmentRelationship {
+  patientId: string;
+  clinicianId: string;
+  clinicianName: string;
+  relationshipType: "ward_doctor" | "referral" | "emergency" | "break_glass";
+  validFrom: string;
+  validUntil: string | null;
+  status: "active" | "expired";
+}
+
+const treatmentRelationships: TreatmentRelationship[] = [
+  { patientId: "j-patel", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
+  { patientId: "t-okonkwo", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
+  { patientId: "r-singh", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
+  { patientId: "m-davies", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
+  { patientId: "m-alfarsi", clinicianId: "clin-andrew-001", clinicianName: "Dr. Andrew", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
+  { patientId: "s-khan", clinicianId: "clin-andrew-001", clinicianName: "Dr. Andrew", relationshipType: "emergency", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
+  { patientId: "s-khan", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "referral", validFrom: "2026-06-03T00:00:00Z", validUntil: "2026-06-10T00:00:00Z", status: "active" },
+];
+
+export function verifyTreatmentRelationship(clinicianId: string, patientId: string): { allowed: boolean; reason?: string } {
+  const rel = treatmentRelationships.find(
+    (r) => r.patientId === patientId && r.clinicianId === clinicianId && r.status === "active"
+  );
+  if (!rel) return { allowed: false, reason: "no_treatment_relationship" };
+  if (rel.validUntil && new Date(rel.validUntil) < new Date()) return { allowed: false, reason: "relationship_expired" };
+  return { allowed: true };
+}
+
+export function getClinicianPatients(clinicianId: string): string[] {
+  return treatmentRelationships
+    .filter((r) => r.clinicianId === clinicianId && r.status === "active")
+    .map((r) => r.patientId);
+}
+
 const clinicalFlags: ClinicalFlag[] = [
   {
     id: "flag-001",

@@ -42,19 +42,31 @@ export default function PatientBriefPage() {
   const [patient, setPatient] = useState<PatientDetailData | null>(null);
   const [flags, setFlags] = useState<FlagData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [accessReason, setAccessReason] = useState("");
+  const [canBreakGlass, setCanBreakGlass] = useState(false);
 
   useEffect(() => {
     if (!patientId) return;
     fetch(`/api/patients/${patientId}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (res.status === 403) return res.json().then((data) => { throw data; });
+        return res.json();
+      })
       .then((data) => {
-        if (data.error) {
-          router.push("/dashboard");
-          return;
-        }
         setPatient(data.patient);
         setFlags(data.flags);
         setLoading(false);
+      })
+      .catch((err) => {
+        if (err.reason === "no_treatment_relationship") {
+          setAccessDenied(true);
+          setAccessReason(err.reason);
+          setCanBreakGlass(err.canBreakGlass);
+          setLoading(false);
+        } else {
+          router.push("/dashboard");
+        }
       });
   }, [patientId, router]);
 
@@ -77,7 +89,37 @@ export default function PatientBriefPage() {
     };
   }, []);
 
-  if (loading || !patient) {
+  if (accessDenied) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-8">
+        <div className="max-w-md w-full bg-surface-container-lowest rounded-xl border border-outline-variant p-8 text-center space-y-6 shadow-lg">
+          <span className="material-symbols-outlined text-[64px] text-critical" data-icon="lock">lock</span>
+          <h2 className="text-headline-xl font-headline-xl text-on-surface">Access Denied</h2>
+          <p className="text-body-base text-on-surface-variant">
+            You do not have an active treatment relationship with this patient.
+            This access has been logged.
+          </p>
+          {canBreakGlass && (
+            <button
+              onClick={() => alert("Break-Glass workflow coming soon")}
+              className="w-full bg-break-glass text-white py-3 rounded-lg font-bold hover:opacity-90 transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined" data-icon="warning">warning</span>
+              Use Break-Glass Access
+            </button>
+          )}
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="w-full border border-outline-variant py-3 rounded-lg font-bold hover:bg-surface-variant transition-all cursor-pointer"
+          >
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex items-center gap-3 text-on-surface-variant">
@@ -89,6 +131,8 @@ export default function PatientBriefPage() {
       </div>
     );
   }
+
+  if (!patient) return null;
 
   const criticalFlags = flags.filter((f) => f.severity === "critical");
   const criticalWarnings = patient.warnings.filter((w) => w.type === "critical");

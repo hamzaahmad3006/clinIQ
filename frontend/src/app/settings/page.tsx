@@ -9,6 +9,9 @@ export default function SettingsPage() {
   const [fhirBaseUrl, setFhirBaseUrl] = useState("");
   const [gpConnectEndpoint, setGpConnectEndpoint] = useState("");
   const [apiKey, setApiKey] = useState("");
+  const [currentClinicianId, setCurrentClinicianId] = useState("clin-henderson-001");
+  const [currentClinicianName, setCurrentClinicianName] = useState("Dr. Henderson");
+  const [currentClinicianRole, setCurrentClinicianRole] = useState("specialist");
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -20,6 +23,9 @@ export default function SettingsPage() {
         setFhirBaseUrl(c.fhirBaseUrl);
         setGpConnectEndpoint(c.gpConnectEndpoint);
         setApiKey(c.apiKey);
+        setCurrentClinicianId(c.currentClinicianId);
+        setCurrentClinicianName(c.currentClinicianName);
+        setCurrentClinicianRole(c.currentClinicianRole);
       });
   }, []);
 
@@ -28,7 +34,7 @@ export default function SettingsPage() {
     await fetch("/api/config", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ dataSource, fhirBaseUrl, gpConnectEndpoint, apiKey }),
+      body: JSON.stringify({ dataSource, fhirBaseUrl, gpConnectEndpoint, apiKey, currentClinicianId, currentClinicianName, currentClinicianRole }),
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -87,7 +93,30 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-4">
+              <div>
+              <label className="block text-label-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
+                Current Clinician
+              </label>
+              <select
+                value={currentClinicianId}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const [id, name, role] = val.split("|");
+                  setCurrentClinicianId(id);
+                  setCurrentClinicianName(name);
+                  setCurrentClinicianRole(role);
+                }}
+                className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 text-body-sm text-on-surface focus:ring-2 focus:ring-secondary focus:outline-none"
+              >
+                <option value="clin-henderson-001|Dr. Henderson|specialist">Dr. Henderson (Specialist)</option>
+                <option value="clin-andrew-001|Dr. Andrew|ward_doctor">Dr. Andrew (Ward Doctor)</option>
+              </select>
+              <p className="text-label-xs text-on-surface-variant mt-1">
+                Treatment Relationship Verification is enforced. Only patients with an active relationship are accessible.
+              </p>
+            </div>
+
+          <div className="space-y-4">
               <div>
                 <label className="block text-label-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">
                   FHIR Base URL
