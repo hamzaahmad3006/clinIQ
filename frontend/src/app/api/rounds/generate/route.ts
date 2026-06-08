@@ -5,9 +5,9 @@ import { getConfig } from "@/lib/configStore";
 
 export async function POST() {
   const config = getConfig();
-  const beds = generateBriefsForWard();
+  const beds = await generateBriefsForWard();
 
-  createAuditLog({
+  await createAuditLog({
     actorId: config.currentClinicianId,
     actorName: config.currentClinicianName,
     actorRole: config.currentClinicianRole,

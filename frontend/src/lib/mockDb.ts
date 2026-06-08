@@ -1,4 +1,4 @@
-/* ───── Types ───── */
+import { supabase } from "./supabase";
 
 export interface Patient {
   id: string;
@@ -111,229 +111,6 @@ export interface EmergencyData {
   blockedTiers: string;
 }
 
-/* ───── Seed Data ───── */
-
-const patients: Patient[] = [
-  {
-    id: "j-patel",
-    name: "J. Patel",
-    initials: "JP",
-    nhsNumber: "482-192-1121",
-    dateOfBirth: "1958-03-12",
-    age: 68,
-    gender: "Male",
-    avatarColor: "#D6E8FA",
-    avatarTextColor: "#2E7DD1",
-    consentStatus: "active",
-    organisationId: "nhs-trust-001",
-  },
-  {
-    id: "m-alfarsi",
-    name: "M. Al-Farsi",
-    initials: "MA",
-    nhsNumber: "591-231-0081",
-    dateOfBirth: "1975-08-22",
-    age: 51,
-    gender: "Male",
-    avatarColor: "#FEF3C7",
-    avatarTextColor: "#B45309",
-    consentStatus: "active",
-    organisationId: "nhs-trust-001",
-  },
-  {
-    id: "s-khan",
-    name: "S. Khan",
-    initials: "SK",
-    nhsNumber: "109-332-9456",
-    dateOfBirth: "1981-04-15",
-    age: 45,
-    gender: "Female",
-    avatarColor: "#FEE2E2",
-    avatarTextColor: "#D92B2B",
-    consentStatus: "active",
-    organisationId: "nhs-trust-001",
-  },
-  {
-    id: "t-okonkwo",
-    name: "T. Okonkwo",
-    initials: "TO",
-    nhsNumber: "739-441-8823",
-    dateOfBirth: "1944-11-03",
-    age: 82,
-    gender: "Male",
-    avatarColor: "#DBEAFE",
-    avatarTextColor: "#1E40AF",
-    consentStatus: "active",
-    organisationId: "nhs-trust-001",
-  },
-  {
-    id: "r-singh",
-    name: "R. Singh",
-    initials: "RS",
-    nhsNumber: "284-109-5567",
-    dateOfBirth: "1965-06-30",
-    age: 61,
-    gender: "Male",
-    avatarColor: "#F3E8FF",
-    avatarTextColor: "#7C3AED",
-    consentStatus: "active",
-    organisationId: "nhs-trust-001",
-  },
-  {
-    id: "m-davies",
-    name: "M. Davies",
-    initials: "MD",
-    nhsNumber: "601-778-2340",
-    dateOfBirth: "1997-02-14",
-    age: 29,
-    gender: "Female",
-    avatarColor: "#D1FAE5",
-    avatarTextColor: "#059669",
-    consentStatus: "active",
-    organisationId: "nhs-trust-001",
-  },
-];
-
-const encounters: Encounter[] = [
-  {
-    id: "enc-001",
-    patientId: "j-patel",
-    patientName: "J. Patel",
-    patientInitials: "JP",
-    nhsNumber: "482-192-1121",
-    encounterType: "inpatient",
-    department: "Cardiology",
-    status: "admitted",
-    statusLabel: "ADMITTED",
-    statusColor: "bg-low-bg text-low-severity border border-outline-variant",
-    borderColor: "border-green-500",
-    briefStatus: "ready",
-    briefPercentage: 100,
-    flagCount: 1,
-    avatarColor: "#D6E8FA",
-    avatarTextColor: "#2E7DD1",
-  },
-  {
-    id: "enc-002",
-    patientId: "m-alfarsi",
-    patientName: "M. Al-Farsi",
-    patientInitials: "MA",
-    nhsNumber: "591-231-0081",
-    encounterType: "inpatient",
-    department: "General Medicine",
-    status: "labs_pending",
-    statusLabel: "LABS PENDING",
-    statusColor: "bg-high-bg text-high-severity border border-high-severity",
-    borderColor: "border-yellow-500",
-    briefStatus: "syncing",
-    briefPercentage: 60,
-    flagCount: 0,
-    avatarColor: "#FEF3C7",
-    avatarTextColor: "#B45309",
-  },
-  {
-    id: "enc-003",
-    patientId: "s-khan",
-    patientName: "S. Khan",
-    patientInitials: "SK",
-    nhsNumber: "109-332-9456",
-    encounterType: "emergency",
-    department: "Emergency Medicine",
-    status: "urgent",
-    statusLabel: "URGENT",
-    statusColor: "bg-critical-bg text-critical border border-critical",
-    borderColor: "border-critical",
-    briefStatus: "ready",
-    briefPercentage: 100,
-    flagCount: 2,
-    avatarColor: "#FEE2E2",
-    avatarTextColor: "#D92B2B",
-  },
-];
-
-const wardBeds: WardBed[] = [
-  {
-    bed: "4B1",
-    patientId: "t-okonkwo",
-    patientName: "T. Okonkwo",
-    age: 82,
-    gender: "Male",
-    briefStatus: "ready",
-    overnightChanges: ["2 new obs"],
-    overnightDetail: "NEWS 4 → 6",
-    flagCount: 1,
-    flagSeverity: "critical",
-  },
-  {
-    bed: "4B2",
-    patientId: "s-khan",
-    patientName: "S. Khan",
-    age: 45,
-    gender: "Female",
-    briefStatus: "ready",
-    overnightChanges: ["New labs ↑"],
-    overnightDetail: "",
-    flagCount: 3,
-    flagSeverity: "high",
-  },
-  {
-    bed: "4B3",
-    patientId: "r-singh",
-    patientName: "R. Singh",
-    age: 61,
-    gender: "Male",
-    briefStatus: "ready",
-    overnightChanges: ["Creatinine 201 ↑"],
-    overnightDetail: "AKI Stage 1 Detected",
-    flagCount: 2,
-    flagSeverity: "critical",
-  },
-  {
-    bed: "4B4",
-    patientId: "m-davies",
-    patientName: "M. Davies",
-    age: 29,
-    gender: "Female",
-    briefStatus: "ready",
-    overnightChanges: [],
-    overnightDetail: "No significant change",
-    flagCount: 0,
-    flagSeverity: "none",
-  },
-];
-
-const overnightEvents: OvernightEvent[] = [
-  {
-    patientName: "R. Singh",
-    bed: "4B3",
-    time: "04:12",
-    severity: "critical",
-    title: "CRITICAL LAB ALERT",
-    description:
-      "Creatinine increased from 115 to 201 µmol/L (AKI Stage 1). Potassium 5.4. No change in urine output noted in nursing notes.",
-  },
-  {
-    patientName: "T. Okonkwo",
-    bed: "4B1",
-    time: "03:45",
-    severity: "high",
-    title: "OBSERVATION TREND",
-    description:
-      "NEWS score escalated from 4 to 6. Tachycardia (112) and slight drop in O2 sats (93% on air). RMO reviewed and increased supplemental O2.",
-  },
-  {
-    patientName: "M. Davies",
-    bed: "4B4",
-    time: "01:20",
-    severity: "low",
-    title: "CLINICAL NOTE",
-    description:
-      "Patient slept well. PRN analgesic administered for minor abdominal pain at 00:30. Effectively settled.",
-  },
-];
-
-/* ───── Treatment Relationships ───── */
-
 export interface TreatmentRelationship {
   patientId: string;
   clinicianId: string;
@@ -343,388 +120,6 @@ export interface TreatmentRelationship {
   validUntil: string | null;
   status: "active" | "expired";
 }
-
-const treatmentRelationships: TreatmentRelationship[] = [
-  { patientId: "j-patel", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
-  { patientId: "t-okonkwo", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
-  { patientId: "r-singh", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
-  { patientId: "m-davies", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
-  { patientId: "m-alfarsi", clinicianId: "clin-andrew-001", clinicianName: "Dr. Andrew", relationshipType: "ward_doctor", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
-  { patientId: "s-khan", clinicianId: "clin-andrew-001", clinicianName: "Dr. Andrew", relationshipType: "emergency", validFrom: "2026-06-01T00:00:00Z", validUntil: null, status: "active" },
-  { patientId: "s-khan", clinicianId: "clin-henderson-001", clinicianName: "Dr. Henderson", relationshipType: "referral", validFrom: "2026-06-03T00:00:00Z", validUntil: "2026-06-10T00:00:00Z", status: "active" },
-];
-
-export function verifyTreatmentRelationship(clinicianId: string, patientId: string): { allowed: boolean; reason?: string } {
-  const rel = treatmentRelationships.find(
-    (r) => r.patientId === patientId && r.clinicianId === clinicianId && r.status === "active"
-  );
-  if (!rel) return { allowed: false, reason: "no_treatment_relationship" };
-  if (rel.validUntil && new Date(rel.validUntil) < new Date()) return { allowed: false, reason: "relationship_expired" };
-  return { allowed: true };
-}
-
-export function getClinicianPatients(clinicianId: string): string[] {
-  return treatmentRelationships
-    .filter((r) => r.clinicianId === clinicianId && r.status === "active")
-    .map((r) => r.patientId);
-}
-
-const clinicalFlags: ClinicalFlag[] = [
-  {
-    id: "flag-001",
-    patientId: "j-patel",
-    patientName: "J. Patel",
-    flagType: "allergy_conflict",
-    severity: "critical",
-    description:
-      "Prescribed Penicillin (V-Cil-K) despite recorded allergy to Penicillins. Brief generation flagged clinical risk.",
-    source: "EPIC / Medication-Admin-Log v1.4",
-    acknowledgedBy: null,
-    acknowledgedAt: null,
-    createdAt: "2026-06-03T07:45:00Z",
-  },
-  {
-    id: "flag-002",
-    patientId: "s-khan",
-    patientName: "S. Khan",
-    flagType: "med_discrepancy",
-    severity: "high",
-    description:
-      "Metformin dose mismatch between GP record (1000mg BD) and discharge summary (500mg BD). Source reconciliation required.",
-    source: "GP Connect / SystmOne v4.2",
-    acknowledgedBy: null,
-    acknowledgedAt: null,
-    createdAt: "2026-06-03T06:30:00Z",
-  },
-  {
-    id: "flag-003",
-    patientId: "s-khan",
-    patientName: "S. Khan",
-    flagType: "contraindication",
-    severity: "critical",
-    description:
-      "Active CKD Stage 3 with eGFR 48. Metformin requires dose review at eGFR < 45. Approaching threshold.",
-    source: "PathologyLIS / Renal Panel",
-    acknowledgedBy: null,
-    acknowledgedAt: null,
-    createdAt: "2026-06-03T04:15:00Z",
-  },
-];
-
-const patientDetails: Record<string, PatientDetail> = {
-  "j-patel": {
-    id: "j-patel",
-    name: "J. Patel",
-    fullName: "Jayesh Patel",
-    nhsNumber: "482 192 1121",
-    dateOfBirth: "12 March 1958",
-    age: 68,
-    gender: "Male",
-    department: "Cardiology",
-    clinician: "Dr. Henderson",
-    allergies: [
-      { name: "Penicillin", severity: "critical", reaction: "Anaphylaxis" },
-      { name: "Latex", severity: "high", reaction: "Contact dermatitis" },
-    ],
-    conditions: [
-      { name: "Atrial Fibrillation", status: "Active", onset: "2019", icd10: "I48.91" },
-      { name: "Mitral Valve Regurgitation", status: "Monitoring", onset: "2021", icd10: "I34.0" },
-      { name: "Hypercholesterolemia", status: "Active", onset: "2015", icd10: "E78.0" },
-    ],
-    medications: [
-      { name: "Apixaban", dose: "5mg", route: "Oral", frequency: "BD", status: "Active" },
-      { name: "Bisoprolol", dose: "2.5mg", route: "Oral", frequency: "OD", status: "Active" },
-      { name: "Atorvastatin", dose: "40mg", route: "Oral", frequency: "ON", status: "Active" },
-    ],
-    investigations: [
-      { name: "ECG — 12 Lead", result: "AF with controlled rate (72bpm)", date: "2026-06-02", status: "Completed" },
-      { name: "Echocardiogram", result: "Moderate MR, LVEF 55%", date: "2026-06-01", status: "Completed" },
-      { name: "Troponin I", result: "< 14 ng/L (Normal)", date: "2026-06-03", status: "Completed" },
-    ],
-    warnings: [
-      { type: "critical", title: "Critical Allergy Conflict", description: "Penicillin allergy — Anaphylaxis risk. Active prescription flagged." },
-      { type: "restricted", title: "Restricted: Mental Health Tier 3", description: "Mental health records restricted under separate consent. Not included in this brief." },
-    ],
-  },
-  "s-khan": {
-    id: "s-khan",
-    name: "S. Khan",
-    fullName: "Samira Khan",
-    nhsNumber: "109 332 9456",
-    dateOfBirth: "15 April 1981",
-    age: 45,
-    gender: "Female",
-    department: "Emergency Medicine",
-    clinician: "Dr. Andrew",
-    allergies: [
-      { name: "Aspirin", severity: "high", reaction: "Asthma exacerbation" },
-    ],
-    conditions: [
-      { name: "Type 2 Diabetes Mellitus", status: "Active", onset: "2018", icd10: "E11.9" },
-      { name: "CKD Stage 3", status: "Active", onset: "2022", icd10: "N18.3" },
-      { name: "Hypercholesterolemia", status: "Active", onset: "2019", icd10: "E78.0" },
-    ],
-    medications: [
-      { name: "Metformin", dose: "1000mg", route: "Oral", frequency: "BD", status: "Active" },
-      { name: "Atorvastatin", dose: "20mg", route: "Oral", frequency: "ON", status: "Active" },
-      { name: "Ramipril", dose: "5mg", route: "Oral", frequency: "OD", status: "Active" },
-    ],
-    investigations: [
-      { name: "Serum Creatinine", result: "142 µmol/L", date: "2026-06-03", status: "Completed" },
-      { name: "eGFR", result: "48 mL/min", date: "2026-06-03", status: "Completed" },
-      { name: "HbA1c", result: "62 mmol/mol (7.8%)", date: "2026-05-28", status: "Completed" },
-    ],
-    warnings: [
-      { type: "critical", title: "Medication Discrepancy", description: "Metformin dose mismatch between GP record and discharge summary. Reconciliation required." },
-    ],
-  },
-  "t-okonkwo": {
-    id: "t-okonkwo",
-    name: "T. Okonkwo",
-    fullName: "Tunde Okonkwo",
-    nhsNumber: "739 441 8823",
-    dateOfBirth: "03 November 1944",
-    age: 82,
-    gender: "Male",
-    department: "General Medicine",
-    clinician: "Dr. Henderson",
-    allergies: [],
-    conditions: [
-      { name: "COPD", status: "Active", onset: "2012", icd10: "J44.1" },
-      { name: "Hypertension", status: "Active", onset: "2008", icd10: "I10" },
-      { name: "Osteoarthritis", status: "Active", onset: "2016", icd10: "M17.1" },
-    ],
-    medications: [
-      { name: "Salbutamol Inhaler", dose: "100mcg", route: "Inhalation", frequency: "PRN", status: "PRN" },
-      { name: "Tiotropium", dose: "18mcg", route: "Inhalation", frequency: "OD", status: "Active" },
-      { name: "Amlodipine", dose: "5mg", route: "Oral", frequency: "OD", status: "Active" },
-      { name: "Paracetamol", dose: "1g", route: "Oral", frequency: "QDS PRN", status: "PRN" },
-    ],
-    investigations: [
-      { name: "Chest X-Ray", result: "Hyperinflated lungs, no consolidation", date: "2026-06-02", status: "Completed" },
-      { name: "ABG", result: "pH 7.38, pCO2 5.8, pO2 9.1", date: "2026-06-03", status: "Completed" },
-      { name: "FBC", result: "WCC 11.2, Hb 128, Plt 245", date: "2026-06-03", status: "Completed" },
-    ],
-    warnings: [],
-  },
-  "r-singh": {
-    id: "r-singh",
-    name: "R. Singh",
-    fullName: "Rajinder Singh",
-    nhsNumber: "284 109 5567",
-    dateOfBirth: "30 June 1965",
-    age: 61,
-    gender: "Male",
-    department: "General Medicine",
-    clinician: "Dr. Henderson",
-    allergies: [
-      { name: "Codeine", severity: "medium", reaction: "Nausea/vomiting" },
-    ],
-    conditions: [
-      { name: "AKI Stage 1", status: "Active", onset: "2026", icd10: "N17.9" },
-      { name: "Type 2 Diabetes Mellitus", status: "Active", onset: "2014", icd10: "E11.9" },
-      { name: "Benign Prostatic Hyperplasia", status: "Active", onset: "2020", icd10: "N40.0" },
-    ],
-    medications: [
-      { name: "IV Normal Saline", dose: "1L", route: "IV", frequency: "8-hourly", status: "Active" },
-      { name: "Gliclazide", dose: "80mg", route: "Oral", frequency: "BD", status: "Active" },
-      { name: "Tamsulosin", dose: "400mcg", route: "Oral", frequency: "OD", status: "Active" },
-    ],
-    investigations: [
-      { name: "Serum Creatinine", result: "201 µmol/L (↑ from 115)", date: "2026-06-03", status: "Completed" },
-      { name: "Potassium", result: "5.4 mmol/L (High)", date: "2026-06-03", status: "Completed" },
-      { name: "Urine Output", result: "Monitoring — 35ml/hr", date: "2026-06-03", status: "Pending" },
-    ],
-    warnings: [
-      { type: "critical", title: "AKI Stage 1 Detected", description: "Creatinine rise from 115 to 201. Nephrotoxic drugs review required. Hold ACE inhibitors and NSAIDs." },
-    ],
-  },
-  "m-alfarsi": {
-    id: "m-alfarsi",
-    name: "M. Al-Farsi",
-    fullName: "Mohammed Al-Farsi",
-    nhsNumber: "591 231 0081",
-    dateOfBirth: "22 August 1975",
-    age: 51,
-    gender: "Male",
-    department: "General Medicine",
-    clinician: "Dr. Andrew",
-    allergies: [],
-    conditions: [
-      { name: "Community Acquired Pneumonia", status: "Active", onset: "2026", icd10: "J18.9" },
-      { name: "Asthma", status: "Active", onset: "2005", icd10: "J45.2" },
-    ],
-    medications: [
-      { name: "Amoxicillin", dose: "500mg", route: "Oral", frequency: "TDS", status: "Active" },
-      { name: "Clarithromycin", dose: "500mg", route: "Oral", frequency: "BD", status: "Active" },
-      { name: "Salbutamol Nebuliser", dose: "5mg", route: "Nebulisation", frequency: "QDS", status: "Active" },
-    ],
-    investigations: [
-      { name: "Chest X-Ray", result: "Right lower lobe consolidation", date: "2026-06-02", status: "Completed" },
-      { name: "CRP", result: "89 mg/L (High)", date: "2026-06-03", status: "Completed" },
-      { name: "Blood Cultures", result: "Pending", date: "2026-06-02", status: "Pending" },
-    ],
-    warnings: [],
-  },
-  "m-davies": {
-    id: "m-davies",
-    name: "M. Davies",
-    fullName: "Megan Davies",
-    nhsNumber: "601 778 2340",
-    dateOfBirth: "14 February 1997",
-    age: 29,
-    gender: "Female",
-    department: "General Surgery",
-    clinician: "Dr. Henderson",
-    allergies: [],
-    conditions: [
-      { name: "Appendicitis (Post-Op)", status: "Resolved", onset: "2026", icd10: "K35.8" },
-    ],
-    medications: [
-      { name: "Paracetamol", dose: "1g", route: "Oral", frequency: "QDS PRN", status: "PRN" },
-      { name: "Ibuprofen", dose: "400mg", route: "Oral", frequency: "TDS", status: "Active" },
-    ],
-    investigations: [
-      { name: "FBC", result: "WCC 8.2, Hb 135, Plt 310", date: "2026-06-02", status: "Completed" },
-      { name: "CRP", result: "12 mg/L (Improving)", date: "2026-06-03", status: "Completed" },
-    ],
-    warnings: [],
-  },
-};
-
-const emergencyData: EmergencyData = {
-  patientId: "s-khan",
-  patientName: "S. Khan",
-  loadingSources: { current: 4, total: 5 },
-  allergies: [
-    { name: "Penicillin", severity: "critical", reaction: "Anaphylaxis" },
-    { name: "Aspirin", severity: "high", reaction: "Asthma exacerbation" },
-  ],
-  criticalFlags: [
-    { title: "DNACPR", detail: "Do Not Attempt CPR — Signed 2024-01-15", code: "ReSPECT" },
-    { title: "High Falls Risk", detail: "Waterlow Score 22 — Very High Risk", code: "NICE CG161" },
-  ],
-  medications: [
-    { name: "Warfarin", dose: "5mg", frequency: "OD", category: "Anticoagulant" },
-    { name: "Metformin", dose: "1000mg", frequency: "BD", category: "Antidiabetic" },
-    { name: "Bisoprolol", dose: "2.5mg", frequency: "OD", category: "Beta-Blocker" },
-    { name: "Atorvastatin", dose: "40mg", frequency: "ON", category: "Statin" },
-  ],
-  conditions: [
-    { name: "T2DM", status: "Active" },
-    { name: "CKD Stage 3", status: "Active" },
-    { name: "Hypercholesterolemia", status: "Active" },
-  ],
-  labs: [
-    { name: "Serum Creatinine", value: "142", unit: "µmol/L", trend: "up" },
-    { name: "eGFR", value: "48", unit: "mL/min", trend: "down" },
-    { name: "HbA1c", value: "62", unit: "mmol/mol", trend: "stable" },
-  ],
-  blockedTiers: "T3–T5 sensitive records blocked. Override requires Break-Glass authorisation.",
-};
-
-/* ───── Mutable State ───── */
-
-let auditLogs: AuditLog[] = [
-  {
-    id: 1,
-    actorId: "clin-andrew-001",
-    actorName: "Dr. Andrew",
-    actorRole: "emergency_physician",
-    action: "auth.login.success",
-    resourceType: "session",
-    resourceId: "sess-001",
-    patientId: null,
-    accessResult: "granted",
-    sensitivityTier: null,
-    timestamp: "2026-06-03T07:30:00Z",
-  },
-];
-
-let nextAuditId = 2;
-
-/* ───── Query Functions ───── */
-
-export function getPatients(): Patient[] {
-  return patients;
-}
-
-export function getPatientById(id: string): Patient | undefined {
-  return patients.find((p) => p.id === id);
-}
-
-export function getPatientDetail(id: string): PatientDetail | undefined {
-  const raw = patientDetails[id];
-  if (!raw) return undefined;
-  return { ...raw };
-}
-
-const tier3PatientIds: Record<string, string[]> = {
-  "j-patel": ["Mental health records"],
-  "s-khan": ["Substance use treatment records"],
-};
-
-export function filterPatientByTier(
-  patient: PatientDetail,
-  tier3Authorized: boolean
-): { patient: PatientDetail; blockedTiers: number[] } {
-  const blockedTiers: number[] = [];
-
-  if (!tier3Authorized && tier3PatientIds[patient.id]) {
-    blockedTiers.push(3);
-    const blockedLabel = tier3PatientIds[patient.id][0];
-
-    return {
-      patient: {
-        ...patient,
-        conditions: patient.conditions.filter((c) => !c.name.includes("Mental") && !c.name.includes("Substance")),
-        medications: patient.medications.filter((m) => !m.name.includes("Antidepressant") && !m.name.includes("Methadone")),
-        investigations: patient.investigations.filter((i) => !i.name.includes("Psychiatric")),
-        warnings: [
-          ...patient.warnings.filter((w) => w.type !== "restricted"),
-          {
-            type: "restricted",
-            title: `Tier 3 Records Blocked: ${blockedLabel}`,
-            description: `${blockedLabel} are restricted under separate consent and are not included in this brief.`,
-          },
-        ],
-      },
-      blockedTiers,
-    };
-  }
-
-  return { patient: { ...patient }, blockedTiers };
-}
-
-export function getEncounters(): Encounter[] {
-  return encounters;
-}
-
-export function getWardBeds(): WardBed[] {
-  return wardBeds;
-}
-
-export function getOvernightEvents(): OvernightEvent[] {
-  return overnightEvents;
-}
-
-export function getClinicalFlags(): ClinicalFlag[] {
-  return clinicalFlags;
-}
-
-export function getClinicalFlagsByPatient(patientId: string): ClinicalFlag[] {
-  return clinicalFlags.filter((f) => f.patientId === patientId);
-}
-
-export function getAuditLogs(): AuditLog[] {
-  return auditLogs;
-}
-
-export function getEmergencyData(): EmergencyData {
-  return emergencyData;
-}
-
-/* ───── Break-Glass Events ───── */
 
 export interface BreakGlassEvent {
   id: string;
@@ -739,74 +134,119 @@ export interface BreakGlassEvent {
   reviewStatus: "pending" | "justified" | "unjustified";
 }
 
-let breakGlassEvents: BreakGlassEvent[] = [];
-let nextBgId = 1;
+/* ───── Helpers ───── */
 
-export function createBreakGlassEvent(
-  clinicianId: string,
-  clinicianName: string,
-  patientId: string,
-  patientName: string,
-  justification: string
-): BreakGlassEvent | { error: string } {
-  // Check limit: max 3 in rolling 30 days
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const recentCount = breakGlassEvents.filter(
-    (e) => e.clinicianId === clinicianId && new Date(e.createdAt) > thirtyDaysAgo
-  ).length;
-  if (recentCount >= 3) return { error: "Break-Glass limit reached (max 3 per 30 days)" };
-
-  const event: BreakGlassEvent = {
-    id: `bg-${nextBgId++}`,
-    clinicianId,
-    clinicianName,
-    patientId,
-    patientName,
-    justification,
-    createdAt: new Date().toISOString(),
-    expiresAt: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString(),
-    privacyOfficerNotified: true,
-    reviewStatus: "pending",
+function mapPatient(row: any): Patient {
+  return {
+    id: row.id,
+    name: row.name,
+    initials: row.initials,
+    nhsNumber: row.nhs_number,
+    dateOfBirth: row.date_of_birth,
+    age: row.age,
+    gender: row.gender,
+    avatarColor: row.avatar_color,
+    avatarTextColor: row.avatar_text_color,
+    consentStatus: row.consent_status,
+    organisationId: row.organisation_id,
   };
-  breakGlassEvents.push(event);
-
-  // Add temporary treatment relationship
-  treatmentRelationships.push({
-    patientId,
-    clinicianId,
-    clinicianName,
-    relationshipType: "break_glass",
-    validFrom: event.createdAt,
-    validUntil: event.expiresAt,
-    status: "active",
-  });
-
-  createAuditLog({
-    actorId: clinicianId,
-    actorName: clinicianName,
-    actorRole: "specialist",
-    action: "break_glass.initiated",
-    resourceType: "patient_brief",
-    resourceId: patientId,
-    patientId,
-    accessResult: "break_glass",
-    sensitivityTier: 2,
-  });
-
-  return event;
 }
 
-export function getActiveBreakGlass(clinicianId: string, patientId: string): BreakGlassEvent | undefined {
-  return breakGlassEvents.find(
-    (e) =>
-      e.clinicianId === clinicianId &&
-      e.patientId === patientId &&
-      new Date(e.expiresAt) > new Date()
-  );
+function mapEncounter(row: any): Encounter {
+  return {
+    id: row.id,
+    patientId: row.patient_id,
+    patientName: row.patient_name,
+    patientInitials: row.patient_initials,
+    nhsNumber: row.nhs_number,
+    encounterType: row.encounter_type,
+    department: row.department,
+    status: row.status,
+    statusLabel: row.status_label,
+    statusColor: row.status_color,
+    borderColor: row.border_color,
+    briefStatus: row.brief_status,
+    briefPercentage: row.brief_percentage,
+    flagCount: row.flag_count,
+    avatarColor: row.avatar_color,
+    avatarTextColor: row.avatar_text_color,
+  };
 }
 
-export function getAllBreakGlassEvents(): BreakGlassEvent[] {
-  return [...breakGlassEvents];
+function mapWardBed(row: any): WardBed {
+  return {
+    bed: row.bed,
+    patientId: row.patient_id,
+    patientName: row.patient_name,
+    age: row.age,
+    gender: row.gender,
+    briefStatus: row.brief_status,
+    overnightChanges: row.overnight_changes ?? [],
+    overnightDetail: row.overnight_detail,
+    flagCount: row.flag_count,
+    flagSeverity: row.flag_severity,
+  };
+}
+
+function mapOvernightEvent(row: any): OvernightEvent {
+  return {
+    patientName: row.patient_name,
+    bed: row.bed,
+    time: row.time,
+    severity: row.severity,
+    title: row.title,
+    description: row.description,
+  };
+}
+
+function mapClinicalFlag(row: any): ClinicalFlag {
+  return {
+    id: row.id,
+    patientId: row.patient_id,
+    patientName: row.patient_name,
+    flagType: row.flag_type,
+    severity: row.severity,
+    description: row.description,
+    source: row.source,
+    acknowledgedBy: row.acknowledged_by,
+    acknowledgedAt: row.acknowledged_at ? row.acknowledged_at : null,
+    createdAt: row.created_at,
+  };
+}
+
+function mapAuditLog(row: any): AuditLog {
+  return {
+    id: row.id,
+    actorId: row.actor_id,
+    actorName: row.actor_name,
+    actorRole: row.actor_role,
+    action: row.action,
+    resourceType: row.resource_type,
+    resourceId: row.resource_id,
+    patientId: row.patient_id ?? null,
+    accessResult: row.access_result,
+    sensitivityTier: row.sensitivity_tier ?? null,
+    timestamp: row.timestamp,
+  };
+}
+
+function mapPatientDetail(row: any): PatientDetail {
+  return {
+    id: row.id,
+    name: row.full_name,
+    fullName: row.full_name,
+    nhsNumber: row.nhs_number,
+    dateOfBirth: row.date_of_birth,
+    age: row.age,
+    gender: row.gender,
+    department: row.department,
+    clinician: row.clinician,
+    allergies: row.allergies ?? [],
+    conditions: row.conditions ?? [],
+    medications: row.medications ?? [],
+    investigations: row.investigations ?? [],
+    warnings: row.warnings ?? [],
+  };
 }
 
 /* ───── Opaque ID Mapping ───── */
@@ -825,50 +265,366 @@ for (const [opaque, internal] of Object.entries(opaqueIdMap)) {
   reverseOpaqueMap[internal] = opaque;
 }
 
-export function resolvePatientId(input: string): string | undefined {
+export async function resolvePatientId(input: string): Promise<string | undefined> {
   if (opaqueIdMap[input]) return opaqueIdMap[input];
-  if (patients.find((p) => p.id === input)) return input;
-  return undefined;
+  const { data } = await supabase.from("patients").select("id").eq("id", input).single();
+  return data?.id ?? undefined;
 }
 
 export function getOpaqueId(internalId: string): string | undefined {
   return reverseOpaqueMap[internalId];
 }
 
+/* ───── Query Functions ───── */
+
+export async function getPatients(): Promise<Patient[]> {
+  const { data } = await supabase.from("patients").select("*");
+  return (data ?? []).map(mapPatient);
+}
+
+export async function getPatientById(id: string): Promise<Patient | undefined> {
+  const { data } = await supabase.from("patients").select("*").eq("id", id).single();
+  return data ? mapPatient(data) : undefined;
+}
+
+export async function getPatientDetail(id: string): Promise<PatientDetail | undefined> {
+  const { data } = await supabase.from("patient_details").select("*").eq("id", id).single();
+  return data ? mapPatientDetail(data) : undefined;
+}
+
+const tier3PatientIds: Record<string, string[]> = {
+  "j-patel": ["Mental health records"],
+  "s-khan": ["Substance use treatment records"],
+};
+
+export function filterPatientByTier(
+  patient: PatientDetail,
+  tier3Authorized: boolean
+): { patient: PatientDetail; blockedTiers: number[] } {
+  const blockedTiers: number[] = [];
+  if (!tier3Authorized && tier3PatientIds[patient.id]) {
+    blockedTiers.push(3);
+    const blockedLabel = tier3PatientIds[patient.id][0];
+    return {
+      patient: {
+        ...patient,
+        conditions: patient.conditions.filter(
+          (c) => !c.name.includes("Mental") && !c.name.includes("Substance")
+        ),
+        medications: patient.medications.filter(
+          (m) => !m.name.includes("Antidepressant") && !m.name.includes("Methadone")
+        ),
+        investigations: patient.investigations.filter(
+          (i) => !i.name.includes("Psychiatric")
+        ),
+        warnings: [
+          ...patient.warnings.filter((w) => w.type !== "restricted"),
+          {
+            type: "restricted" as const,
+            title: `Tier 3 Records Blocked: ${blockedLabel}`,
+            description: `${blockedLabel} are restricted under separate consent and are not included in this brief.`,
+          },
+        ],
+      },
+      blockedTiers,
+    };
+  }
+  return { patient: { ...patient }, blockedTiers };
+}
+
+export async function getEncounters(): Promise<Encounter[]> {
+  const { data } = await supabase.from("encounters").select("*");
+  return (data ?? []).map(mapEncounter);
+}
+
+export async function getWardBeds(): Promise<WardBed[]> {
+  const { data } = await supabase.from("ward_beds").select("*");
+  return (data ?? []).map(mapWardBed);
+}
+
+export async function getOvernightEvents(): Promise<OvernightEvent[]> {
+  const { data } = await supabase.from("overnight_events").select("*").order("id", { ascending: false });
+  return (data ?? []).map(mapOvernightEvent);
+}
+
+export async function getClinicalFlags(): Promise<ClinicalFlag[]> {
+  const { data } = await supabase.from("clinical_flags").select("*");
+  return (data ?? []).map(mapClinicalFlag);
+}
+
+export async function getClinicalFlagsByPatient(patientId: string): Promise<ClinicalFlag[]> {
+  const { data } = await supabase.from("clinical_flags").select("*").eq("patient_id", patientId);
+  return (data ?? []).map(mapClinicalFlag);
+}
+
+export async function getAuditLogs(): Promise<AuditLog[]> {
+  const { data } = await supabase.from("audit_logs").select("*").order("id", { ascending: false });
+  return (data ?? []).map(mapAuditLog);
+}
+
+export function getEmergencyData(): EmergencyData {
+  return {
+    patientId: "s-khan",
+    patientName: "S. Khan",
+    loadingSources: { current: 4, total: 5 },
+    allergies: [
+      { name: "Penicillin", severity: "critical", reaction: "Anaphylaxis" },
+      { name: "Aspirin", severity: "high", reaction: "Asthma exacerbation" },
+    ],
+    criticalFlags: [
+      { title: "DNACPR", detail: "Do Not Attempt CPR — Signed 2024-01-15", code: "ReSPECT" },
+      { title: "High Falls Risk", detail: "Waterlow Score 22 — Very High Risk", code: "NICE CG161" },
+    ],
+    medications: [
+      { name: "Warfarin", dose: "5mg", frequency: "OD", category: "Anticoagulant" },
+      { name: "Metformin", dose: "1000mg", frequency: "BD", category: "Antidiabetic" },
+      { name: "Bisoprolol", dose: "2.5mg", frequency: "OD", category: "Beta-Blocker" },
+      { name: "Atorvastatin", dose: "40mg", frequency: "ON", category: "Statin" },
+    ],
+    conditions: [
+      { name: "T2DM", status: "Active" },
+      { name: "CKD Stage 3", status: "Active" },
+      { name: "Hypercholesterolemia", status: "Active" },
+    ],
+    labs: [
+      { name: "Serum Creatinine", value: "142", unit: "µmol/L", trend: "up" },
+      { name: "eGFR", value: "48", unit: "mL/min", trend: "down" },
+      { name: "HbA1c", value: "62", unit: "mmol/mol", trend: "stable" },
+    ],
+    blockedTiers: "T3–T5 sensitive records blocked. Override requires Break-Glass authorisation.",
+  };
+}
+
+/* ───── Treatment Relationship ───── */
+
+export async function verifyTreatmentRelationship(
+  clinicianId: string,
+  patientId: string
+): Promise<{ allowed: boolean; reason?: string }> {
+  const { data, error } = await supabase
+    .from("treatment_relationships")
+    .select("*")
+    .eq("patient_id", patientId)
+    .eq("clinician_id", clinicianId)
+    .eq("status", "active")
+    .single();
+
+  if (error || !data) {
+    return { allowed: false, reason: "no_treatment_relationship" };
+  }
+  if (data.valid_until && new Date(data.valid_until) < new Date()) {
+    return { allowed: false, reason: "relationship_expired" };
+  }
+  return { allowed: true };
+}
+
+export async function getClinicianPatients(clinicianId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from("treatment_relationships")
+    .select("patient_id")
+    .eq("clinician_id", clinicianId)
+    .eq("status", "active");
+
+  return (data ?? []).map((r: any) => r.patient_id);
+}
+
 /* ───── Mutation Functions ───── */
 
-export function createAuditLog(entry: Omit<AuditLog, "id" | "timestamp">): AuditLog {
-  const log: AuditLog = {
-    ...entry,
-    id: nextAuditId++,
-    timestamp: new Date().toISOString(),
+export async function createAuditLog(
+  entry: Omit<AuditLog, "id" | "timestamp">
+): Promise<AuditLog> {
+  const { data, error } = await supabase
+    .from("audit_logs")
+    .insert({
+      actor_id: entry.actorId,
+      actor_name: entry.actorName,
+      actor_role: entry.actorRole,
+      action: entry.action,
+      resource_type: entry.resourceType,
+      resource_id: entry.resourceId,
+      patient_id: entry.patientId ?? null,
+      access_result: entry.accessResult,
+      sensitivity_tier: entry.sensitivityTier ?? null,
+    })
+    .select()
+    .single();
+
+  if (error || !data) {
+    console.error("Failed to create audit log:", error);
+    throw new Error("Failed to create audit log");
+  }
+  return mapAuditLog(data);
+}
+
+export async function generateBriefsForWard(): Promise<WardBed[]> {
+  const { data: beds } = await supabase
+    .from("ward_beds")
+    .select("*")
+    .eq("brief_status", "syncing");
+
+  if (beds && beds.length > 0) {
+    const syncingIds = beds.map((b: any) => b.bed);
+    await supabase
+      .from("ward_beds")
+      .update({ brief_status: "ready" })
+      .in("bed", syncingIds);
+  }
+
+  await supabase
+    .from("encounters")
+    .update({ brief_status: "ready", brief_percentage: 100 })
+    .eq("brief_status", "syncing");
+
+  const { data: allBeds } = await supabase.from("ward_beds").select("*");
+  return (allBeds ?? []).map(mapWardBed);
+}
+
+export async function acknowledgeClinicalFlag(
+  flagId: string,
+  clinicianName: string
+): Promise<ClinicalFlag | undefined> {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("clinical_flags")
+    .update({ acknowledged_by: clinicianName, acknowledged_at: now })
+    .eq("id", flagId)
+    .select()
+    .single();
+
+  if (error || !data) return undefined;
+  return mapClinicalFlag(data);
+}
+
+/* ───── Break-Glass ───── */
+
+export async function createBreakGlassEvent(
+  clinicianId: string,
+  clinicianName: string,
+  patientId: string,
+  patientName: string,
+  justification: string
+): Promise<BreakGlassEvent | { error: string }> {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("break_glass_events")
+    .select("*", { count: "exact", head: true })
+    .eq("clinician_id", clinicianId)
+    .gte("created_at", thirtyDaysAgo);
+
+  if (count && count >= 3) {
+    return { error: "Break-Glass limit reached (max 3 per 30 days)" };
+  }
+
+  const eventId = `bg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + 72 * 60 * 60 * 1000);
+
+  const event: BreakGlassEvent = {
+    id: eventId,
+    clinicianId,
+    clinicianName,
+    patientId,
+    patientName,
+    justification,
+    createdAt: now.toISOString(),
+    expiresAt: expiresAt.toISOString(),
+    privacyOfficerNotified: true,
+    reviewStatus: "pending",
   };
-  auditLogs.push(log);
-  return log;
+
+  const { error: bgError } = await supabase.from("break_glass_events").insert({
+    id: eventId,
+    clinician_id: clinicianId,
+    clinician_name: clinicianName,
+    patient_id: patientId,
+    patient_name: patientName,
+    justification,
+    created_at: now.toISOString(),
+    expires_at: expiresAt.toISOString(),
+    privacy_officer_notified: true,
+    review_status: "pending",
+  });
+
+  if (bgError) {
+    console.error("Failed to create break-glass event:", bgError);
+    return { error: "Failed to create break-glass event" };
+  }
+
+  const { error: trError } = await supabase.from("treatment_relationships").insert({
+    patient_id: patientId,
+    clinician_id: clinicianId,
+    clinician_name: clinicianName,
+    relationship_type: "break_glass",
+    valid_from: now.toISOString(),
+    valid_until: expiresAt.toISOString(),
+    status: "active",
+  });
+
+  if (trError) {
+    console.error("Failed to create temp treatment relationship:", trError);
+  }
+
+  await createAuditLog({
+    actorId: clinicianId,
+    actorName: clinicianName,
+    actorRole: "specialist",
+    action: "break_glass.initiated",
+    resourceType: "patient_brief",
+    resourceId: patientId,
+    patientId,
+    accessResult: "break_glass",
+    sensitivityTier: 2,
+  });
+
+  return event;
 }
 
-export function generateBriefsForWard(): WardBed[] {
-  // Simulate AI generating briefs — flip all syncing beds to ready
-  for (const bed of wardBeds) {
-    if (bed.briefStatus === "syncing") {
-      bed.briefStatus = "ready";
-    }
-  }
-  // Also update encounter brief statuses
-  for (const enc of encounters) {
-    if (enc.briefStatus === "syncing") {
-      enc.briefStatus = "ready";
-      enc.briefPercentage = 100;
-    }
-  }
-  return wardBeds;
+export async function getActiveBreakGlass(
+  clinicianId: string,
+  patientId: string
+): Promise<BreakGlassEvent | undefined> {
+  const now = new Date().toISOString();
+  const { data } = await supabase
+    .from("break_glass_events")
+    .select("*")
+    .eq("clinician_id", clinicianId)
+    .eq("patient_id", patientId)
+    .gt("expires_at", now)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!data) return undefined;
+  return {
+    id: data.id,
+    clinicianId: data.clinician_id,
+    clinicianName: data.clinician_name,
+    patientId: data.patient_id,
+    patientName: data.patient_name,
+    justification: data.justification,
+    createdAt: data.created_at,
+    expiresAt: data.expires_at,
+    privacyOfficerNotified: data.privacy_officer_notified,
+    reviewStatus: data.review_status,
+  };
 }
 
-export function acknowledgeClinicalFlag(flagId: string, clinicianName: string): ClinicalFlag | undefined {
-  const flag = clinicalFlags.find((f) => f.id === flagId);
-  if (flag) {
-    flag.acknowledgedBy = clinicianName;
-    flag.acknowledgedAt = new Date().toISOString();
-  }
-  return flag;
+export async function getAllBreakGlassEvents(): Promise<BreakGlassEvent[]> {
+  const { data } = await supabase
+    .from("break_glass_events")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    clinicianId: row.clinician_id,
+    clinicianName: row.clinician_name,
+    patientId: row.patient_id,
+    patientName: row.patient_name,
+    justification: row.justification,
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    privacyOfficerNotified: row.privacy_officer_notified,
+    reviewStatus: row.review_status,
+  }));
 }

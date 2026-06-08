@@ -10,14 +10,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Justification must be at least 20 characters" }, { status: 400 });
   }
 
-  const patient = getPatientById(patientId);
+  const patient = await getPatientById(patientId);
   if (!patient) {
     return NextResponse.json({ error: "Patient not found" }, { status: 404 });
   }
 
   const config = getConfig();
 
-  const result = createBreakGlassEvent(
+  const result = await createBreakGlassEvent(
     config.currentClinicianId,
     config.currentClinicianName,
     patientId,

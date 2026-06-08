@@ -14,7 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const internalId = resolvePatientId(id);
+  const internalId = await resolvePatientId(id);
 
   if (!internalId) {
     return NextResponse.json({ error: "Patient not found" }, { status: 404 });
@@ -22,9 +22,9 @@ export async function GET(
 
   const config = getConfig();
 
-  const trv = verifyTreatmentRelationship(config.currentClinicianId, internalId);
+  const trv = await verifyTreatmentRelationship(config.currentClinicianId, internalId);
   if (!trv.allowed) {
-    createAuditLog({
+    await createAuditLog({
       actorId: config.currentClinicianId,
       actorName: config.currentClinicianName,
       actorRole: config.currentClinicianRole,
@@ -41,20 +41,20 @@ export async function GET(
     );
   }
 
-  const patient = getPatientDetail(internalId);
+  const patient = await getPatientDetail(internalId);
 
   if (!patient) {
     return NextResponse.json({ error: "Patient not found" }, { status: 404 });
   }
 
-  const flags = getClinicalFlagsByPatient(internalId);
+  const flags = await getClinicalFlagsByPatient(internalId);
 
   // Filter by sensitivity tier
   const { patient: filteredPatient, blockedTiers } = filterPatientByTier(patient, config.tier3Authorized ?? false);
 
   // Log tier blocking
   if (blockedTiers.length > 0) {
-    createAuditLog({
+    await createAuditLog({
       actorId: config.currentClinicianId,
       actorName: config.currentClinicianName,
       actorRole: config.currentClinicianRole,
@@ -67,7 +67,7 @@ export async function GET(
     });
   }
 
-  createAuditLog({
+  await createAuditLog({
     actorId: config.currentClinicianId,
     actorName: config.currentClinicianName,
     actorRole: config.currentClinicianRole,

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     apiKey: config.groqApiKey || process.env.GROQ_API_KEY,
   });
 
-  createAuditLog({
+  await createAuditLog({
     actorId: config.currentClinicianId,
     actorName: config.currentClinicianName,
     actorRole: config.currentClinicianRole,

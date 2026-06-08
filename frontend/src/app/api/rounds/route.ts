@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { getWardBeds, getOvernightEvents, getClinicalFlags } from "@/lib/mockDb";
 
 export async function GET() {
-  const beds = getWardBeds();
-  const events = getOvernightEvents();
-  const flags = getClinicalFlags();
+  const beds = await getWardBeds();
+  const events = await getOvernightEvents();
+  const flags = await getClinicalFlags();
 
   return NextResponse.json({
     beds,

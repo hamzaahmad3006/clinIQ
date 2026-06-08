@@ -6,18 +6,19 @@ export async function GET(request: NextRequest) {
   const action = searchParams.get("action");
   const limit = parseInt(searchParams.get("limit") || "100");
 
-  let logs = getAuditLogs().sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const allLogs = await getAuditLogs();
+  let logs = allLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   if (action) {
     logs = logs.filter((l) => l.action.includes(action));
   }
 
-  return NextResponse.json({ logs: logs.slice(0, limit), total: getAuditLogs().length });
+  return NextResponse.json({ logs: logs.slice(0, limit), total: allLogs.length });
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const log = createAuditLog({
+  const log = await createAuditLog({
     actorId: body.actorId,
     actorName: body.actorName,
     actorRole: body.actorRole,
