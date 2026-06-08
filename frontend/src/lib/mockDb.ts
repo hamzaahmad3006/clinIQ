@@ -181,7 +181,7 @@ function mapWardBed(row: any): WardBed {
     age: row.age,
     gender: row.gender,
     briefStatus: row.brief_status,
-    overnightChanges: row.overnight_changes ?? [],
+    overnightChanges: parseJSON(row.overnight_changes),
     overnightDetail: row.overnight_detail,
     flagCount: row.flag_count,
     flagSeverity: row.flag_severity,
@@ -230,6 +230,11 @@ function mapAuditLog(row: any): AuditLog {
   };
 }
 
+function parseJSON(value: any): any {
+  if (typeof value === "string") return JSON.parse(value);
+  return value ?? [];
+}
+
 function mapPatientDetail(row: any): PatientDetail {
   return {
     id: row.id,
@@ -241,11 +246,11 @@ function mapPatientDetail(row: any): PatientDetail {
     gender: row.gender,
     department: row.department,
     clinician: row.clinician,
-    allergies: row.allergies ?? [],
-    conditions: row.conditions ?? [],
-    medications: row.medications ?? [],
-    investigations: row.investigations ?? [],
-    warnings: row.warnings ?? [],
+    allergies: parseJSON(row.allergies),
+    conditions: parseJSON(row.conditions),
+    medications: parseJSON(row.medications),
+    investigations: parseJSON(row.investigations),
+    warnings: parseJSON(row.warnings),
   };
 }
 
