@@ -252,12 +252,12 @@ function mapPatientDetail(row: any): PatientDetail {
 /* ───── Opaque ID Mapping ───── */
 
 const opaqueIdMap: Record<string, string> = {
-  "enc_a7f3b9c2": "j-patel",
-  "enc_b8d4e0f3": "m-alfarsi",
-  "enc_c9e5f1a4": "s-khan",
-  "enc_d0f6a2b5": "t-okonkwo",
-  "enc_e1a7b3c6": "r-singh",
-  "enc_f2b8c4d7": "m-davies",
+  "enc_a7f3b9c2": "j-wilson",
+  "enc_b8d4e0f3": "m-thompson",
+  "enc_c9e5f1a4": "r-johnson",
+  "enc_d0f6a2b5": "d-brown",
+  "enc_e1a7b3c6": "w-davis",
+  "enc_f2b8c4d7": "s-miller",
 };
 
 const reverseOpaqueMap: Record<string, string> = {};
@@ -293,8 +293,8 @@ export async function getPatientDetail(id: string): Promise<PatientDetail | unde
 }
 
 const tier3PatientIds: Record<string, string[]> = {
-  "j-patel": ["Mental health records"],
-  "s-khan": ["Substance use treatment records"],
+  "j-wilson": ["Mental health records"],
+  "r-johnson": ["Substance use treatment records"],
 };
 
 export function filterPatientByTier(
@@ -364,8 +364,8 @@ export async function getAuditLogs(): Promise<AuditLog[]> {
 
 export function getEmergencyData(): EmergencyData {
   return {
-    patientId: "s-khan",
-    patientName: "S. Khan",
+    patientId: "r-johnson",
+    patientName: "R. Johnson",
     loadingSources: { current: 4, total: 5 },
     allergies: [
       { name: "Penicillin", severity: "critical", reaction: "Anaphylaxis" },
