@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/useSession";
+import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
 
 interface RoundsData {
   beds: {
@@ -30,7 +31,7 @@ const opaqueIdMap: Record<string, string> = {
 export default function WardRoundPage() {
   const router = useRouter();
   const { minutesLeft, isWarning } = useSession();
-  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [generateState, setGenerateState] = useState<"idle" | "processing" | "ready">("idle");
   const [data, setData] = useState<RoundsData | null>(null);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
@@ -43,17 +44,7 @@ export default function WardRoundPage() {
       .then(setData);
   }, []);
 
-  // Handle window focus loss to trigger visual security overlay blur
-  useEffect(() => {
-    const handleBlur = () => {
-      setIsOverlayOpen(true);
-    };
-
-    window.addEventListener("blur", handleBlur);
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, []);
+  // Focus loss is handled globally
 
   // Trigger briefs generation via API
   const handleGenerateBriefs = async () => {
@@ -93,7 +84,10 @@ export default function WardRoundPage() {
               </div>
             </div>
           </div>
-          <button className="w-full py-3 px-4 bg-break-glass-bg border-2 border-break-glass text-break-glass text-label-xs font-bold rounded-lg hover:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+          <button
+            onClick={() => setIsBgModalOpen(true)}
+            className="w-full py-3 px-4 bg-break-glass-bg border-2 border-break-glass text-break-glass text-label-xs font-bold rounded-lg hover:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
             <span className="material-symbols-outlined text-[18px]" data-icon="gavel">
               gavel
             </span>
@@ -563,31 +557,8 @@ export default function WardRoundPage() {
         </footer>
       </div>
 
-      {/* Security Overlay Shield */}
-      {isOverlayOpen && (
-        <div
-          className="fixed inset-0 z-[100] bg-phi-mask-overlay flex flex-col items-center justify-center text-white p-8 text-center backdrop-blur-md"
-          id="phi-overlay"
-        >
-          <span className="material-symbols-outlined text-[64px] mb-4 text-error">
-            lock
-          </span>
-          <h2 className="text-display-3xl font-headline-xl mb-4">
-            PHI Protected View
-          </h2>
-          <p className="max-w-md text-body-base opacity-80 mb-8">
-            Clinical data is hidden while window focus is lost to prevent
-            unauthorized patient identification in accordance with clinical
-            security protocols.
-          </p>
-          <button
-            className="px-8 py-4 bg-blue-500 rounded-lg font-bold hover:scale-105 transition-transform cursor-pointer"
-            onClick={() => setIsOverlayOpen(false)}
-          >
-            Resume Session
-          </button>
-        </div>
-      )}
+      {/* Focus loss is handled globally */}
+      <BreakGlassGlobalModal isOpen={isBgModalOpen} onClose={() => setIsBgModalOpen(false)} />
     </div>
   );
 }

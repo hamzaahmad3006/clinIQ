@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "@/lib/useSession";
+import { PHIValue } from "@/components/PHIValue";
+import { BreakGlassActiveBanner } from "@/components/BreakGlassActiveBanner";
+import { SensitivityTierWarning } from "@/components/SensitivityTierWarning";
 
 interface PatientDetailData {
   id: string;
@@ -36,12 +39,10 @@ export default function PatientBriefPage() {
   const patientId = params?.id as string;
   const { minutesLeft, isWarning } = useSession();
 
-  const [isBlurred, setIsBlurred] = useState(false);
-  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
-  const [overlayOpacity, setOverlayOpacity] = useState(0);
   const [patient, setPatient] = useState<PatientDetailData | null>(null);
   const [flags, setFlags] = useState<FlagData[]>([]);
   const [blockedTiers, setBlockedTiers] = useState<number[]>([]);
+  const [activeBreakGlass, setActiveBreakGlass] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [accessReason, setAccessReason] = useState("");
@@ -66,6 +67,7 @@ export default function PatientBriefPage() {
         setPatient(data.patient);
         setFlags(data.flags);
         setBlockedTiers(data.blockedTiers ?? []);
+        setActiveBreakGlass(data.activeBreakGlass || null);
         setLoading(false);
       })
       .catch((err) => {
@@ -79,25 +81,6 @@ export default function PatientBriefPage() {
         }
       });
   }, [patientId, router]);
-
-  useEffect(() => {
-    const handleBlur = () => {
-      setIsBlurred(true);
-      setIsOverlayVisible(true);
-      setTimeout(() => setOverlayOpacity(1), 10);
-    };
-    const handleFocus = () => {
-      setOverlayOpacity(0);
-      setIsBlurred(false);
-      setTimeout(() => setIsOverlayVisible(false), 300);
-    };
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
-    };
-  }, []);
 
   const handleGenerateAiBrief = async () => {
     if (!patient || aiBriefLoading) return;
@@ -412,7 +395,10 @@ export default function PatientBriefPage() {
           </nav>
 
           <div className="px-4 mt-auto mb-6">
-            <button className="w-full bg-break-glass text-white py-3 rounded font-ui-heading text-body-sm flex items-center justify-center gap-2 hover:bg-red-700 transition-colors border-2 border-orange-200 cursor-pointer">
+            <button
+              onClick={() => setShowBreakGlassForm(true)}
+              className="w-full bg-break-glass text-white py-3 rounded font-ui-heading text-body-sm flex items-center justify-center gap-2 hover:bg-red-700 transition-colors border-2 border-orange-200 cursor-pointer"
+            >
               <span className="material-symbols-outlined text-[18px]" data-icon="lock_open">lock_open</span>
               Break-Glass Access
             </button>
@@ -430,25 +416,29 @@ export default function PatientBriefPage() {
           </div>
         </aside>
 
-        <main className={`flex-grow md:pl-sidebar-expanded p-margin-desktop bg-background pb-24 w-full flex flex-col transition-all duration-300 ${isBlurred ? "phi-masked" : ""}`}>
+        <main className="flex-grow md:pl-sidebar-expanded p-margin-desktop bg-background pb-24 w-full flex flex-col transition-all duration-300">
+          {activeBreakGlass && (
+            <div className="mb-6">
+              <BreakGlassActiveBanner expiresAt={activeBreakGlass.expiresAt} />
+            </div>
+          )}
           <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <div className="group cursor-pointer select-none">
+            <div className="group select-none">
               <h1 className="font-headline-xl text-headline-xl text-primary mb-1">
-                {patient.name} ·{" "}
-                <span className="group relative cursor-help select-none">
-                  <span className="group-hover:hidden">
-                    NHS *** *** **{patient.nhsNumber.replace(/\D/g, "").slice(-2)}
-                  </span>
-                  <span className="hidden group-hover:inline bg-amber-50 px-1 rounded-sm">
-                    NHS {patient.nhsNumber}
-                  </span>
-                </span>{" "}
-                · Born {patient.dateOfBirth.split(" ").pop() || patient.dateOfBirth}
+                <PHIValue type="name" patientId={patient.id} patientName={patient.fullName}>
+                  {patient.name}
+                </PHIValue> ·{" "}
+                <PHIValue type="nhs" patientId={patient.id} patientName={patient.fullName}>
+                  {patient.nhsNumber}
+                </PHIValue> · Born{" "}
+                <PHIValue type="dob" patientId={patient.id} patientName={patient.fullName}>
+                  {patient.dateOfBirth}
+                </PHIValue>
               </h1>
               <div className="flex items-center gap-4 text-label-xs font-label-xs">
                 <span className="flex items-center gap-1 text-secondary font-bold">
                   <span className="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
-                  TRV: Scheduled appointment
+                  TRV: {activeBreakGlass ? "Emergency Override" : "Scheduled appointment"}
                 </span>
                 <span className="text-outline">Assigned: {patient.department}</span>
               </div>
@@ -484,13 +474,21 @@ export default function PatientBriefPage() {
             ))}
 
             {restrictedWarnings.map((w, i) => (
-              <div key={i} className="bg-tier3-bg border-l-4 border-tier3-warn p-4 flex items-center justify-between rounded-r-lg shadow-sm">
-                <div className="flex items-center gap-3 text-tier3-warn">
-                  <span className="material-symbols-outlined" data-icon="visibility_off">visibility_off</span>
-                  <span className="font-ui-heading text-body-base">{w.title}: {w.description}</span>
-                </div>
-                <button className="bg-tier3-warn/10 text-tier3-warn px-4 py-1 rounded text-label-xs font-bold border border-tier3-warn/20 cursor-pointer active:scale-95 transition-transform hover:bg-tier3-warn/20 transition-colors">Request Access</button>
-              </div>
+              <SensitivityTierWarning
+                key={i}
+                title={w.title}
+                description={w.description}
+                onAuthorizationGranted={() => {
+                  fetch(`/api/patients/${patientId}`)
+                    .then((res) => res.json())
+                    .then((data) => {
+                      setPatient(data.patient);
+                      setFlags(data.flags);
+                      setBlockedTiers(data.blockedTiers ?? []);
+                      setActiveBreakGlass(data.activeBreakGlass || null);
+                    });
+                }}
+              />
             ))}
 
             {criticalFlags.map((f) => (
@@ -715,15 +713,7 @@ export default function PatientBriefPage() {
         </nav>
       </div>
 
-      {isOverlayVisible && (
-        <div className="fixed inset-0 bg-phi-mask-overlay backdrop-blur-md z-[100] flex items-center justify-center pointer-events-none transition-opacity duration-300" style={{ opacity: overlayOpacity }} id="phi-overlay">
-          <div className="text-center text-white bg-navy-800 p-8 rounded-2xl border-2 border-white/20 shadow-2xl">
-            <span className="material-symbols-outlined text-[64px] mb-4" data-icon="enhanced_encryption">enhanced_encryption</span>
-            <h2 className="text-headline-xl font-headline-xl mb-2">Patient Records Masked</h2>
-            <p className="text-body-base opacity-70">Focus window to resume clinical review.</p>
-          </div>
-        </div>
-      )}
+      {/* PHI overlay handled globally */}
     </div>
   );
 }
