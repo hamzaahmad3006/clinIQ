@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   description: "Secure Clinical Information Aggregation System",
 };
 
+import { PHIMaskingLayer } from "@/components/PHIMaskingLayer";
+import { SessionTimeoutWarning } from "@/components/SessionTimeoutWarning";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,7 +44,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <PHIMaskingLayer />
+        <SessionTimeoutWarning />
+      </body>
     </html>
   );
 }

@@ -6,6 +6,7 @@ import {
   resolvePatientId,
   verifyTreatmentRelationship,
   filterPatientByTier,
+  getActiveBreakGlass,
 } from "@/lib/mockDb";
 import { getConfig } from "@/lib/configStore";
 
@@ -79,5 +80,7 @@ export async function GET(
     sensitivityTier: 2,
   });
 
-  return NextResponse.json({ patient: filteredPatient, flags, blockedTiers });
+  const activeBreakGlass = await getActiveBreakGlass(config.currentClinicianId, internalId);
+
+  return NextResponse.json({ patient: filteredPatient, flags, blockedTiers, activeBreakGlass });
 }

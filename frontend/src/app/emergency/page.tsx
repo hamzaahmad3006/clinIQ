@@ -3,24 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "@/lib/useSession";
 import { useRouter } from "next/navigation";
+import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
 
 export default function EmergencyBriefPage() {
   const router = useRouter();
   const { minutesLeft, isWarning } = useSession();
-  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+  const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [activeQuadrant, setActiveQuadrant] = useState<number | null>(null);
 
-  // Handle window focus loss to trigger visual security overlay blur
-  useEffect(() => {
-    const handleBlur = () => {
-      setIsOverlayOpen(true);
-    };
-
-    window.addEventListener("blur", handleBlur);
-    return () => {
-      window.removeEventListener("blur", handleBlur);
-    };
-  }, []);
+  // Focus loss is handled globally
 
   // Handle keyboard shortcuts (A to acknowledge, 1-4 to focus quadrants)
   useEffect(() => {
@@ -167,7 +158,10 @@ export default function EmergencyBriefPage() {
         </nav>
 
         <div className="px-6 mt-auto space-y-4">
-          <button className="w-full py-3 bg-break-glass text-on-primary font-bold text-label-xs rounded flex items-center justify-center gap-2 hover:brightness-110 active:scale-98 transition-all cursor-pointer">
+          <button
+            onClick={() => setIsBgModalOpen(true)}
+            className="w-full py-3 bg-break-glass text-on-primary font-bold text-label-xs rounded flex items-center justify-center gap-2 hover:brightness-110 active:scale-98 transition-all cursor-pointer"
+          >
             <span className="material-symbols-outlined text-[16px]">
               lock_open
             </span>
@@ -459,31 +453,8 @@ export default function EmergencyBriefPage() {
           </section>
         </div>
 
-        {/* PHI Protection Overlay (Hidden by default, shown on blur) */}
-        {isOverlayOpen && (
-          <div
-            className="absolute inset-0 bg-phi-mask-overlay z-[100] flex flex-col items-center justify-center backdrop-blur-md"
-            id="phi-overlay"
-          >
-            <div className="text-white text-center">
-              <span className="material-symbols-outlined text-[64px] mb-4">
-                visibility_off
-              </span>
-              <div className="text-display-2xl font-headline-xl">
-                PHI MASKED
-              </div>
-              <div className="text-body-base opacity-70">
-                Focus lost. Re-authenticate or click to reveal.
-              </div>
-              <button
-                className="mt-8 px-8 py-3 bg-secondary text-white rounded font-bold hover:brightness-110 transition-all cursor-pointer"
-                onClick={() => setIsOverlayOpen(false)}
-              >
-                RESUME SESSION
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Focus loss is handled globally */}
+        <BreakGlassGlobalModal isOpen={isBgModalOpen} onClose={() => setIsBgModalOpen(false)} />
       </main>
 
       {/* Bottom Navigation Bar (Mobile Status Indicators) */}

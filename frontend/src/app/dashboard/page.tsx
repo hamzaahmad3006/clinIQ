@@ -4,36 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/useSession";
 
-// Interactive mask component that shows masked NHS by default
-// and reveals full number on click-and-hold.
-const PHIMask = ({ children, onReveal }: { children: string; onReveal?: () => void }) => {
-  const [revealed, setRevealed] = useState(false);
-  const rawNhs = String(children);
-  const lastTwo = rawNhs.replace(/\D/g, "").slice(-2);
-  const masked = `*** *** **${lastTwo}`;
-
-  return (
-    <span
-      onMouseDown={() => {
-        setRevealed(true);
-        if (!revealed) onReveal?.();
-      }}
-      onMouseUp={() => setRevealed(false)}
-      onMouseLeave={() => setRevealed(false)}
-      onTouchStart={() => {
-        setRevealed(true);
-        if (!revealed) onReveal?.();
-      }}
-      onTouchEnd={() => setRevealed(false)}
-      className="text-data-mono text-on-surface-variant cursor-help select-none transition-all duration-150 px-1 rounded-sm"
-      style={{
-        backgroundColor: revealed ? "#FFFBEB" : "transparent",
-      }}
-    >
-      {revealed ? rawNhs : masked}
-    </span>
-  );
-};
+import { PHIValue } from "@/components/PHIValue";
+import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
 
 interface DashboardData {
   patients: { id: string; name: string; initials: string; nhsNumber: string; avatarColor: string; avatarTextColor: string }[];
@@ -66,6 +38,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { minutesLeft, isWarning } = useSession();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [isBgModalOpen, setIsBgModalOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/patients")
@@ -179,7 +152,10 @@ export default function DashboardPage() {
         </nav>
 
         <div className="mt-auto px-4 space-y-4">
-          <button className="w-full py-3 bg-break-glass text-on-primary text-label-xs font-bold rounded flex items-center justify-center gap-2 border-2 border-break-glass hover:opacity-90 transition-all cursor-pointer">
+          <button
+            onClick={() => setIsBgModalOpen(true)}
+            className="w-full py-3 bg-break-glass text-on-primary text-label-xs font-bold rounded flex items-center justify-center gap-2 border-2 border-break-glass hover:opacity-90 transition-all cursor-pointer"
+          >
             <span className="material-symbols-outlined" data-icon="warning">
               warning
             </span>
@@ -428,9 +404,9 @@ export default function DashboardPage() {
                     <span className="text-body-base font-bold">{enc.patientName}</span>
                   </div>
                   <div>
-                    <PHIMask onReveal={() => logNhsReveal(enc.patientId, enc.patientName)}>
+                    <PHIValue type="nhs" patientId={enc.patientId} patientName={enc.patientName}>
                       {enc.nhsNumber}
-                    </PHIMask>
+                    </PHIValue>
                   </div>
                   <div>
                     <span
@@ -592,6 +568,7 @@ export default function DashboardPage() {
           </div>
         </footer>
       </div>
+      <BreakGlassGlobalModal isOpen={isBgModalOpen} onClose={() => setIsBgModalOpen(false)} />
     </div>
   );
 }
