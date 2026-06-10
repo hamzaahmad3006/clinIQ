@@ -178,3 +178,19 @@
 body {
   font-family: var(--font-dm-sans), sans-serif;
 }
+
+@media print {
+  body * {
+    visibility: visible;
+  }
+  .fixed,
+  nav,
+  button,
+  .material-symbols-outlined,
+  .print-hide {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}

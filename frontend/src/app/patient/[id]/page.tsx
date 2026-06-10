@@ -133,6 +133,10 @@ export default function PatientBriefPage() {
     alert("Brief marked as reviewed. Audit logged.");
   };
 
+  const handlePrintBrief = () => {
+    window.print();
+  };
+
   const handleBreakGlass = async () => {
     if (bgJustification.length < 20) return;
     setBgProcessing(true);
@@ -453,7 +457,10 @@ export default function PatientBriefPage() {
                 <span className="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
                 {aiBriefLoading ? "Generating..." : "AI Brief"}
               </button>
-              <button className="bg-surface-container-high px-4 py-2 rounded-lg text-body-sm flex items-center gap-2 font-bold hover:bg-surface-container-highest transition-colors cursor-pointer border border-outline-variant/10 active:scale-95 transition-transform duration-100">
+              <button
+                onClick={handlePrintBrief}
+                className="bg-surface-container-high px-4 py-2 rounded-lg text-body-sm flex items-center gap-2 font-bold hover:bg-surface-container-highest transition-colors cursor-pointer border border-outline-variant/10 active:scale-95 transition-transform duration-100"
+              >
                 <span className="material-symbols-outlined" data-icon="print">print</span> Print Brief
               </button>
               <button className="bg-secondary text-on-secondary px-6 py-2 rounded-lg text-body-sm flex items-center gap-2 font-bold hover:opacity-90 transition-all cursor-pointer active:scale-95 transition-transform duration-100">
