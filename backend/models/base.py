@@ -7,6 +7,11 @@ def camel_to_snake(name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
 
+def snake_to_camel(name: str) -> str:
+    first, *rest = name.split("_")
+    return first + "".join(word.capitalize() for word in rest)
+
+
 class BaseModel(PydanticBaseModel):
     model_config = ConfigDict(
         extra="ignore",
@@ -18,3 +23,7 @@ class BaseModel(PydanticBaseModel):
         if isinstance(data, dict):
             return {camel_to_snake(k): v for k, v in data.items()}
         return data
+
+    def model_dump(self, **kwargs) -> dict:
+        data = super().model_dump(**kwargs)
+        return {snake_to_camel(k): v for k, v in data.items()}
