@@ -55,6 +55,7 @@ export default function PatientBriefPage() {
   const [aiBriefLoading, setAiBriefLoading] = useState(false);
   const [, setAiBriefModel] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
+  const [mdtStatus, setMdtStatus] = useState<"idle" | "sharing" | "done">("idle");
 
   useEffect(() => {
     if (!patientId) return;
@@ -135,6 +136,41 @@ export default function PatientBriefPage() {
 
   const handlePrintBrief = () => {
     window.print();
+  };
+
+  const handleShareToMDT = async () => {
+    setMdtStatus("sharing");
+    try {
+      await fetch("/api/audit-logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          actorId: "clin-henderson-001",
+          actorName: "Dr. Henderson",
+          actorRole: "specialist",
+          action: "brief.shared_to_mdt",
+          resourceType: "patient_brief",
+          resourceId: patientId,
+          patientId,
+          accessResult: "granted",
+          sensitivityTier: 2,
+        }),
+      });
+      const shareData = {
+        title: `ClinIQ - ${patient?.fullName || "Patient"} Brief`,
+        text: `Patient Brief: ${patient?.fullName} (${patient?.nhsNumber})`,
+        url: window.location.href,
+      };
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+      }
+    } catch {
+      // user cancelled or clipboard failed
+    }
+    setMdtStatus("done");
+    setTimeout(() => setMdtStatus("idle"), 3000);
   };
 
   const handleBreakGlass = async () => {
@@ -463,8 +499,13 @@ export default function PatientBriefPage() {
               >
                 <span className="material-symbols-outlined" data-icon="print">print</span> Print Brief
               </button>
-              <button className="bg-secondary text-on-secondary px-6 py-2 rounded-lg text-body-sm flex items-center gap-2 font-bold hover:opacity-90 transition-all cursor-pointer active:scale-95 transition-transform duration-100">
-                <span className="material-symbols-outlined" data-icon="ios_share">ios_share</span> Share to MDT
+              <button
+                onClick={handleShareToMDT}
+                disabled={mdtStatus === "sharing"}
+                className="bg-secondary text-on-secondary px-6 py-2 rounded-lg text-body-sm flex items-center gap-2 font-bold hover:opacity-90 transition-all cursor-pointer active:scale-95 transition-transform duration-100 disabled:opacity-60 disabled:cursor-wait"
+              >
+                <span className="material-symbols-outlined" data-icon="ios_share">ios_share</span>
+                {mdtStatus === "sharing" ? "Sharing..." : mdtStatus === "done" ? "Shared!" : "Share to MDT"}
               </button>
             </div>
           </div>
