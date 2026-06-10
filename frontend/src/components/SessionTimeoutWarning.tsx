@@ -2,11 +2,13 @@
 
 import React from "react";
 import { useSession } from "@/lib/useSession";
+import { useClinician } from "@/lib/useClinician";
 import { useRouter, usePathname } from "next/navigation";
 
 export function SessionTimeoutWarning() {
   const pathname = usePathname();
   const router = useRouter();
+  const clinician = useClinician();
   const { secondsLeft, showWarning, resetTimer } = useSession();
 
   const handleLogout = async () => {
@@ -15,9 +17,9 @@ export function SessionTimeoutWarning() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          actorId: "clin-henderson-001",
-          actorName: "Dr. Henderson",
-          actorRole: "specialist",
+          actorId: clinician.id,
+          actorName: clinician.name,
+          actorRole: clinician.role,
           action: "auth.logout.manual",
           resourceType: "session",
           resourceId: `sess-${Date.now()}`,

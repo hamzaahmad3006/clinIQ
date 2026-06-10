@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/useSession";
+import { useClinician } from "@/lib/useClinician";
 import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
 
 interface RoundsData {
@@ -31,6 +32,7 @@ const opaqueIdMap: Record<string, string> = {
 export default function WardRoundPage() {
   const router = useRouter();
   const { minutesLeft, isWarning } = useSession();
+  const clinician = useClinician();
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [generateState, setGenerateState] = useState<"idle" | "processing" | "ready">("idle");
   const [data, setData] = useState<RoundsData | null>(null);
@@ -77,10 +79,10 @@ export default function WardRoundPage() {
             </div>
             <div>
               <div className="text-on-primary text-body-sm font-bold">
-                Dr. Henderson
+                {clinician.name}
               </div>
               <div className="text-label-xs font-label-xs opacity-70">
-                On-Call Physician
+                {clinician.role.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
               </div>
             </div>
           </div>

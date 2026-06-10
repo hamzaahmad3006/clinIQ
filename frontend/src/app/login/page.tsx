@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useClinician } from "@/lib/useClinician";
 
 export default function LoginPage() {
   const router = useRouter();
+  const clinician = useClinician();
   const [isChecked, setIsChecked] = useState(false);
   const [pin, setPin] = useState("");
 
@@ -42,9 +44,9 @@ export default function LoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          actorId: "clin-henderson-001",
-          actorName: "Dr. Henderson",
-          actorRole: "specialist",
+          actorId: clinician.id,
+          actorName: clinician.name,
+          actorRole: clinician.role,
           action: "auth.login.success",
           resourceType: "session",
           resourceId: `sess-${Date.now()}`,

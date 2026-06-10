@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "@/lib/useSession";
+import { useClinician } from "@/lib/useClinician";
 import { useRouter } from "next/navigation";
 import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
 
 export default function EmergencyBriefPage() {
   const router = useRouter();
   const { minutesLeft, isWarning } = useSession();
+  const clinician = useClinician();
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
   const [activeQuadrant, setActiveQuadrant] = useState<number | null>(null);
 
@@ -117,10 +119,12 @@ export default function EmergencyBriefPage() {
         <div className="px-6 mb-8">
           <div className="flex items-center gap-3 mb-1">
             <span className="font-headline-lg text-on-primary">
-              Dr. Henderson
+              {clinician.name}
             </span>
           </div>
-          <div className="text-body-sm opacity-70">On-Call Physician</div>
+          <div className="text-body-sm opacity-70">
+            {clinician.role.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+          </div>
         </div>
 
         <nav className="flex-1">

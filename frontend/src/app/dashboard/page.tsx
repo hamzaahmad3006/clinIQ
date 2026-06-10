@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/useSession";
+import { useClinician } from "@/lib/useClinician";
 
 import { PHIValue } from "@/components/PHIValue";
 import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
@@ -37,6 +38,7 @@ const opaqueIdMap: Record<string, string> = {
 export default function DashboardPage() {
   const router = useRouter();
   const { minutesLeft, isWarning } = useSession();
+  const clinician = useClinician();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);
 
@@ -58,9 +60,9 @@ export default function DashboardPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        actorId: "clin-andrew-001",
-        actorName: "Dr. Andrew",
-        actorRole: "on_call_physician",
+        actorId: clinician.id,
+        actorName: clinician.name,
+        actorRole: clinician.role,
         action: "phi.nhs_number.revealed",
         resourceType: "patient_encounter",
         resourceId: opaque,
@@ -84,14 +86,14 @@ export default function DashboardPage() {
         <div className="px-4 mb-8">
           <div className="flex items-center gap-3 p-3 bg-navy-700 rounded-lg">
             <img
-              alt="Dr. Andrew"
+              alt={clinician.name}
               className="w-10 h-10 rounded-full object-cover"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_j0ZTAJy57YKRA3cXKCHl3TMTF7DV8ELmdUSxfMVwCO4IbNDNIMXsnmtyAVgqdOEcOhpM29kJ2vMjgGR4z98nPguMVPieQn4ARy3-J7PBISnpEMB2f8Y655xHzCsLM5xWqD-NCbOLAqThiPMAtVOvQ3ZTxi7fYukCR6PpsPM_khnui8lwVLZfXjEsX6uoeKW7NDSMaxoe-hBDgG5T1Obqny6A-d8AzWxiGdxdmh3-a7t5gZLb84y_grm1GPpweNvOeW8rLTSl5K8"
             />
             <div>
-              <p className="text-body-sm font-body-sm font-bold">Dr. Andrew</p>
+              <p className="text-body-sm font-body-sm font-bold">{clinician.name}</p>
               <p className="text-label-xs font-label-xs opacity-70">
-                On-Call Physician
+                {clinician.role.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
               </p>
             </div>
           </div>
@@ -254,7 +256,7 @@ export default function DashboardPage() {
           <div className="flex justify-between items-end">
             <div>
               <h2 className="text-display-2xl font-display-2xl text-on-surface">
-                Welcome back, Dr. Andrew
+                Welcome back, {clinician.name}
               </h2>
               <p className="text-body-base text-on-surface-variant">
                 Intensive Care Unit • Monday, Oct 23

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "@/lib/useSession";
+import { useClinician } from "@/lib/useClinician";
 import { PHIValue } from "@/components/PHIValue";
 import { BreakGlassActiveBanner } from "@/components/BreakGlassActiveBanner";
 import { SensitivityTierWarning } from "@/components/SensitivityTierWarning";
@@ -38,6 +39,7 @@ export default function PatientBriefPage() {
   const params = useParams();
   const patientId = params?.id as string;
   const { minutesLeft, isWarning } = useSession();
+  const clinician = useClinician();
 
   const [patient, setPatient] = useState<PatientDetailData | null>(null);
   const [flags, setFlags] = useState<FlagData[]>([]);
@@ -120,9 +122,9 @@ export default function PatientBriefPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        actorId: "clin-henderson-001",
-        actorName: "Dr. Henderson",
-        actorRole: "specialist",
+        actorId: clinician.id,
+        actorName: clinician.name,
+        actorRole: clinician.role,
         action: "brief.marked_reviewed",
         resourceType: "patient_brief",
         resourceId: patientId,
@@ -145,9 +147,9 @@ export default function PatientBriefPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          actorId: "clin-henderson-001",
-          actorName: "Dr. Henderson",
-          actorRole: "specialist",
+          actorId: clinician.id,
+          actorName: clinician.name,
+          actorRole: clinician.role,
           action: "brief.shared_to_mdt",
           resourceType: "patient_brief",
           resourceId: patientId,

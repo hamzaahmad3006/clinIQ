@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useClinician } from "@/lib/useClinician";
 
 interface PHIValueProps {
   children: string;
@@ -11,6 +12,7 @@ interface PHIValueProps {
 
 export function PHIValue({ children, type, patientId, patientName }: PHIValueProps) {
   const [revealed, setRevealed] = useState(false);
+  const clinician = useClinician();
 
   const raw = String(children);
 
@@ -32,9 +34,9 @@ export function PHIValue({ children, type, patientId, patientName }: PHIValuePro
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          actorId: "clin-henderson-001",
-          actorName: "Dr. Henderson",
-          actorRole: "specialist",
+          actorId: clinician.id,
+          actorName: clinician.name,
+          actorRole: clinician.role,
           action: `phi.${type}.revealed`,
           resourceType: "patient_brief",
           resourceId: patientId,
