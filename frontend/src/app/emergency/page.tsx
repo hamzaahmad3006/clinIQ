@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "@/lib/useSession";
 import { useClinician } from "@/lib/useClinician";
+import { useAuthGuard } from "@/lib/useAuth";
 import { useRouter } from "next/navigation";
 import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
 
 export default function EmergencyBriefPage() {
   const router = useRouter();
+  useAuthGuard();
   const { minutesLeft, isWarning } = useSession();
   const clinician = useClinician();
   const [isBgModalOpen, setIsBgModalOpen] = useState(false);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { setAuth } from "@/lib/useAuth";
 
 const SESSION_DURATION = 900;
 const WARNING_THRESHOLD = 120;
@@ -41,7 +42,7 @@ export function useSession() {
               accessResult: "denied",
               sensitivityTier: null,
             }),
-          }).finally(() => router.push("/login"));
+          }).finally(() => { setAuth(false); router.push("/login"); });
           return 0;
         }
         return prev - 1;

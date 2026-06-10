@@ -3,6 +3,7 @@
 import React from "react";
 import { useSession } from "@/lib/useSession";
 import { useClinician } from "@/lib/useClinician";
+import { setAuth } from "@/lib/useAuth";
 import { useRouter, usePathname } from "next/navigation";
 
 export function SessionTimeoutWarning() {
@@ -31,6 +32,7 @@ export function SessionTimeoutWarning() {
     } catch (err) {
       console.error(err);
     }
+    setAuth(false);
     resetTimer();
     router.push("/login");
   };

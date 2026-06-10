@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/lib/useSession";
 import { useClinician } from "@/lib/useClinician";
+import { useAuthGuard } from "@/lib/useAuth";
 
 import { PHIValue } from "@/components/PHIValue";
 import { BreakGlassGlobalModal } from "@/components/BreakGlassGlobalModal";
@@ -37,6 +38,7 @@ const opaqueIdMap: Record<string, string> = {
 
 export default function DashboardPage() {
   const router = useRouter();
+  useAuthGuard();
   const { minutesLeft, isWarning } = useSession();
   const clinician = useClinician();
   const [data, setData] = useState<DashboardData | null>(null);

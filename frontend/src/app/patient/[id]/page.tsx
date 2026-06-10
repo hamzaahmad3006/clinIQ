@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "@/lib/useSession";
 import { useClinician } from "@/lib/useClinician";
+import { useAuthGuard } from "@/lib/useAuth";
 import { PHIValue } from "@/components/PHIValue";
 import { BreakGlassActiveBanner } from "@/components/BreakGlassActiveBanner";
 import { SensitivityTierWarning } from "@/components/SensitivityTierWarning";
@@ -37,7 +38,8 @@ interface FlagData {
 export default function PatientBriefPage() {
   const router = useRouter();
   const params = useParams();
-  const patientId = params?.id as string;
+  const patientId = params.id as string;
+  useAuthGuard();
   const { minutesLeft, isWarning } = useSession();
   const clinician = useClinician();
 

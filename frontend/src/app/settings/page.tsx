@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthGuard } from "@/lib/useAuth";
 
 export default function SettingsPage() {
   const router = useRouter();
+  useAuthGuard();
   const [dataSource, setDataSource] = useState("mock");
   const [fhirBaseUrl, setFhirBaseUrl] = useState("");
   const [gpConnectEndpoint, setGpConnectEndpoint] = useState("");

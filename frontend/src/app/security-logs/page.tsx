@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthGuard } from "@/lib/useAuth";
 
 interface AuditEntry {
   id: number;
@@ -16,6 +17,7 @@ interface AuditEntry {
 
 export default function SecurityLogsPage() {
   const router = useRouter();
+  useAuthGuard();
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [filter, setFilter] = useState("");
 

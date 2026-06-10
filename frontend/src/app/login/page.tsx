@@ -3,12 +3,19 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useClinician } from "@/lib/useClinician";
+import { getAuth, setAuth } from "@/lib/useAuth";
 
 export default function LoginPage() {
   const router = useRouter();
   const clinician = useClinician();
   const [isChecked, setIsChecked] = useState(false);
   const [pin, setPin] = useState("");
+
+  useEffect(() => {
+    if (getAuth()) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
 
   // Handle window focus and blur event listeners to trigger PHI security mask on the page
   useEffect(() => {
@@ -32,6 +39,7 @@ export default function LoginPage() {
   const handleNhsLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (isChecked) {
+      setAuth(true);
       router.push("/dashboard");
     }
   };
@@ -55,6 +63,7 @@ export default function LoginPage() {
           sensitivityTier: null,
         }),
       });
+      setAuth(true);
       router.push("/dashboard");
     }
   };
