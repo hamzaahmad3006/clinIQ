@@ -53,7 +53,7 @@ export default function PatientBriefPage() {
   const [bgProcessing, setBgProcessing] = useState(false);
   const [aiBrief, setAiBrief] = useState<string | null>(null);
   const [aiBriefLoading, setAiBriefLoading] = useState(false);
-  const [aiBriefModel, setAiBriefModel] = useState<string | null>(null);
+  const [, setAiBriefModel] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
 
   useEffect(() => {
@@ -512,9 +512,6 @@ export default function PatientBriefPage() {
                     <h2 className="text-headline-lg font-headline-lg text-indigo-800">AI Clinical Brief</h2>
                   </div>
                   <div className="flex items-center gap-3">
-                    {aiBriefModel && (
-                      <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">{aiBriefModel}</span>
-                    )}
                     <button
                       onClick={() => setShowAiModal(false)}
                       className="p-2 hover:bg-surface-variant rounded-full cursor-pointer"

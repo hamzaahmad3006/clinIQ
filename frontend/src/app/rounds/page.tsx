@@ -35,7 +35,7 @@ export default function WardRoundPage() {
   const [generateState, setGenerateState] = useState<"idle" | "processing" | "ready">("idle");
   const [data, setData] = useState<RoundsData | null>(null);
   const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [aiModel, setAiModel] = useState<string | null>(null);
+  const [, setAiModel] = useState<string | null>(null);
   const [showAiModal, setShowAiModal] = useState(false);
 
   useEffect(() => {
@@ -486,9 +486,6 @@ export default function WardRoundPage() {
                         <h2 className="text-headline-lg font-headline-lg text-indigo-800">AI Ward Summary</h2>
                       </div>
                       <div className="flex items-center gap-3">
-                        {aiModel && (
-                          <span className="text-label-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-data-mono">{aiModel}</span>
-                        )}
                         <button
                           onClick={() => setShowAiModal(false)}
                           className="p-2 hover:bg-surface-variant rounded-full cursor-pointer"
